@@ -1,0 +1,76 @@
+[project]
+name = "frelectedofficials"
+version = "0.1.0"
+description = "An MCP server for adding context to an LLM about French elected officials."
+readme = "README.md"
+requires-python = ">=3.14"
+authors = [
+    { name = "John Pendenque", email = "pendenquejohn@gmail.com" }
+]
+license = { file = "LICENSE" }
+dependencies = [
+    "fastmcp[apps,standard]>=4.0.0",
+    "fastparquet>=2026.5.0",
+    "httpx2>=2.12.0",
+    "huey>=3.3.4",
+    "orjson>=3.12.0",
+    "pandas>=3.0.5",
+    "psycopg>=3.3.5",
+    "pyarrow>=25.0.1",
+    "pydantic>=2.13.5",
+    "python-dotenv>=1.2.3",
+    "redis>=8.1.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-aio>=2.1.7",
+    "pytest-cov>=7.1.0",
+    "pytest-datafiles>=3.0.1",
+    "pytest-reportlog>=1.0.0",
+    "pytest-timeout>=2.4.0",
+    "ruff>=0.16.5",
+    "unidecode>=1.4.0",
+]
+
+[tool.pyright]
+typeCheckingMode = "off"
+reportMissingImports = true
+reportUntypedBaseClass = true
+
+[tool.pytest]
+testpaths = ["tests"]
+timeout="5000"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "api: marks tests as api tests",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+[tool.pytest_env]
+env_files = [".env", ".env.test"]
+
+[tool.autopep8]
+max_line_length = 120
+in-place = true
+recursive = true
+aggressive = 3
+
+[tool.coverage.run]
+omit = [
+    "manage.py",
+    "*/migrations/*",
+    "*/__init__.py",
+    "*/typings.py"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]
