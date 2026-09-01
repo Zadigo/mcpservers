@@ -11,6 +11,9 @@ BASE_DIR = pathlib.Path(__file__).parent.absolute()
 MEDIA_DIR = BASE_DIR / 'media'
 
 
+REGISTRY = MEDIA_DIR / 'registry.json'
+
+
 REDIS_CACHE_KEY = 'frelectedofficials:data'
 
 

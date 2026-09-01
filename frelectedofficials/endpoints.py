@@ -4,31 +4,15 @@ import asyncio
 import io
 import pathlib
 from abc import ABC, abstractmethod
-from collections import OrderedDict
 
 import httpx2
-import orjson
 import pandas
 import unidecode
 
+from models.base import FileInfo, RegistryInfo
 from utils import MEDIA_DIR, redis_client
 
 FILE_WRITER_LOCK = asyncio.Lock()
-
-class JsonRegistry(OrderedDict[str, pathlib.Path]):
-    """A registry that stores the files that were created by
-    the elected officials classes. This is used to keep track 
-    of the generated files.
-    """
-
-    async def create_file(self):
-        fullpath = MEDIA_DIR / 'registry.json'
-        with fullpath.open('w', encoding='utf-8') as f:
-            # Orjson does not support pathlib.Path serialization, 
-            # so we convert the values to strings
-            clean_data = {k: str(v) for k, v in self.items()}
-            data = orjson.dumps(clean_data, option=orjson.OPT_INDENT_2 | orjson.OPT_PASSTHROUGH_DATACLASS)
-            f.write(data.decode('utf-8'))
 
 
 class AbstractCreator(ABC):
@@ -36,11 +20,19 @@ class AbstractCreator(ABC):
     def factory_method(self) -> ElectedOfficials:
         pass
 
-    async def get_elected_official(self, registry: JsonRegistry | None = None) -> pandas.DataFrame | None:
+    async def get_elected_official(self, registry: RegistryInfo | None = None) -> pandas.DataFrame | None:
         instance = self.factory_method()
 
         if registry is not None:
-            registry[instance.fr_title] = instance.get_filepath
+            registry.count += 1
+
+            registry.files.append(
+                FileInfo(
+                    title=instance.fr_title,
+                    filepath=str(instance.get_filepath),
+                    created_on=pandas.Timestamp.now(tz='UTC').isoformat()
+                )
+            )
 
             async with FILE_WRITER_LOCK:
                 await registry.create_file()
@@ -174,5 +166,6 @@ async def generate_elected_officials(creator: AbstractCreator) -> pandas.DataFra
     Args:
         creator (AbstractCreator): An instance of a class that implements the AbstractCreator interface.
     """
-    registry = JsonRegistry()
+    # registry = JsonRegistry(count=1, files=[])
+    registry = RegistryInfo(count=1, files=[])
     return await creator.get_elected_official(registry=registry)

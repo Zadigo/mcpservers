@@ -1,3 +1,10 @@
 {
-  "Élus Conseiller d'Arrondissement": "/Volumes/Coding/Projects/Open-Source/mcpservers/frelectedofficials/media/elus-conseiller-darrondissement-ca.csv"
+  "count": 1,
+  "files": [
+    {
+      "title": "Élus Conseiller d'Arrondissement",
+      "filepath": "/path/to/elus-conseiller-darrondissement-ca.csv",
+      "created_on": "2024-06-15T12:00:00Z"
+    }
+  ]
 }

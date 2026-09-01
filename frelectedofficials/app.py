@@ -1,10 +1,17 @@
 # import asyncio
 from contextlib import asynccontextmanager
 
-from fastmcp import FastMCP
+from fastmcp.server import FastMCP
 from fastmcp.server.providers import FileSystemProvider
 from fastmcp.server.providers.skills import SkillsDirectoryProvider
+from mcp.types import (
+    CompletionContext,
+    PromptArgument,
+    PromptReference,
+    ResourceTemplateReference,
+)
 
+from models.base import get_registry
 from utils import BASE_DIR
 
 # from endpoints import (
@@ -39,3 +46,18 @@ app = FastMCP(
 )
 
 app.add_provider(SkillsDirectoryProvider(roots=BASE_DIR.joinpath(".claude", "skills")))
+
+
+@app.completion
+def complete(ref: PromptReference, argument: PromptArgument, context: CompletionContext):
+    def run_filter():
+        return [value for value in registry.filenames if argument.value.lower() in value.lower()]
+
+    registry = get_registry()
+    if isinstance(ref, PromptReference) and ref.name == "ask_about_single_dataset" and argument.name == "name":
+        return run_filter()
+
+    if isinstance(ref, ResourceTemplateReference) and ref.name == "ask_about_single_dataset" and argument.name == "name":
+        return run_filter()
+            
+    return None
