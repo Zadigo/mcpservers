@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastmcp import FastMCP
 from fastmcp.server.providers import FileSystemProvider
+from fastmcp.server.providers.skills import SkillsDirectoryProvider
 
 from utils import BASE_DIR
 
@@ -36,3 +37,5 @@ app = FastMCP(
         FileSystemProvider(BASE_DIR.joinpath('components'), reload=True)
     ]
 )
+
+app.add_provider(SkillsDirectoryProvider(roots=BASE_DIR.joinpath(".claude", "skills")))
