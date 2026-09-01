@@ -59,5 +59,8 @@ def complete(ref: PromptReference, argument: PromptArgument, context: Completion
 
     if isinstance(ref, ResourceTemplateReference) and ref.name == "ask_about_single_dataset" and argument.name == "name":
         return run_filter()
+
+    if isinstance(ref, PromptReference) and ref.name == "ask_about_dataset" and argument.name == "name":
+        return run_filter()
             
     return None

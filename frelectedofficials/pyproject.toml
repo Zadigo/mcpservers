@@ -9,6 +9,7 @@ authors = [
 ]
 license = { file = "LICENSE" }
 dependencies = [
+    "aiofiles>=25.1.0",
     "fastmcp[apps,standard]>=4.0.0",
     "fastparquet>=2026.5.0",
     "httpx2>=2.12.0",
