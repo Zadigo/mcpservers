@@ -5,6 +5,7 @@ import io
 import logging
 import pathlib
 from abc import ABC, abstractmethod
+from typing import Any
 
 import httpx2
 import pandas
@@ -76,6 +77,11 @@ class ElectedOfficials(ABC):
         return MEDIA_DIR.joinpath(self.filename)
 
     @property
+    def parquet_filepath(self) -> pathlib.Path:
+        """Returns the full path to the Parquet file."""
+        return self.get_filepath.with_suffix('.parquet')
+
+    @property
     def translation_dict(self) -> dict[str, str]:
         """Use this property to provide a translation dictionary 
         for renaming from their french column names to English."""
@@ -85,10 +91,24 @@ class ElectedOfficials(ABC):
     async def get_dataframe(self) -> pandas.DataFrame | None:
         return await self.fetch_cache_or_csv()
     
-    async def fetch_csv_file(self):
-        """Fetches the CSV file from the URL."""
+    async def fetch_csv_file(self, fetch_only: bool = False, no_fix: bool = False, cache_url: bool = False):
+        """Fetches the CSV file from the URL.
+        
+        Args:
+            fetch_only (bool): If True, returns the raw CSV content without processing.
+            no_fix (bool): If True, returns the raw DataFrame without renaming columns or calculating additional fields.
+            cache_url (bool): If True, caches content of the url in Redis for future use which for example is useful for testing and debugging to avoid repeated network requests.
+        """
+        url_cache_key = f'urls:{self.filename}'
+
+        db = redis_client()
+        if cache_url and db.get(url_cache_key):
+            logger.info(f"Using cached URL content for {self.filename}.")
+            cached_content = db.get(url_cache_key)
+            return pandas.read_csv(io.StringIO(cached_content), sep=';')
+
         if self.url == '' or self.url is None:
-            raise ValueError("URL is not set for the elected officials class.")
+            raise ValueError("URL is not set for the elected officials class.")            
         
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
@@ -100,11 +120,24 @@ class ElectedOfficials(ABC):
             response = await client.get(self.url, headers=headers)
             response.raise_for_status()
 
+            if cache_url:
+                db.set(
+                    url_cache_key,
+                    response.content,
+                    ex=(15 * 24 * 60 * 60)  # Cache for 15 days
+                )
+
             if response.status_code != 200:
                 raise ValueError(f"Failed to fetch CSV file: {response.status_code}")
 
+            if fetch_only:
+                return io.BytesIO(response.content)
+
             buffer = io.BytesIO(response.content)
             self._dataframe = pandas.read_csv(buffer, sep=';')
+
+            if no_fix:
+                return self._dataframe
 
             # Rename the columns to be more Pythonic 
             # (lowercase and underscores instead of spaces)
@@ -123,14 +156,30 @@ class ElectedOfficials(ABC):
             self._dataframe['age'] = calculator('date_de_naissance')
             self._dataframe['duree_du_mandat'] = calculator('date_de_debut_du_mandat')
 
-            self._dataframe.to_parquet(MEDIA_DIR / self.filename.replace('.csv', '.parquet'), index=False)
+            # Correction for "code_du_departement" which raising
+            # an error when saving to parquet: pyarrow.lib.ArrowInvalid: ("Could not convert '27' 
+            # with type str: tried to convert to int64", 'Conversion failed for column 
+            # code_du_departement with type object')
+            # 1. Department codes (2 digits, e.g., '01', '2A')
+            if 'code_du_departement' in self._dataframe.columns:
+                self._dataframe['code_du_departement'] = self._dataframe['code_du_departement'].astype(str).str.zfill(2)
+
+            # 2. Commune/INSEE codes (5 digits, e.g., '27599', '01001')
+            if 'code_de_la_commune' in self._dataframe.columns:
+                self._dataframe['code_de_la_commune'] = self._dataframe['code_de_la_commune'].astype(str).str.zfill(5)
+
+            # 3. Postal codes (5 digits, e.g., '75001') - Add this defensively if you have it
+            if 'code_postal' in self._dataframe.columns:
+                self._dataframe['code_postal'] = self._dataframe['code_postal'].astype(str).str.zfill(5)
+
+            self._dataframe.to_parquet(self.parquet_filepath, index=False)
 
             # if self.translation_dict:
             #     self._dataframe.rename(columns=self.translation_dict, inplace=True)
 
             return self._dataframe
 
-    async def fetch_cache_or_csv(self, force_clear_cache: bool = False) -> pandas.DataFrame | None:
+    async def fetch_cache_or_csv(self, force_clear_cache: bool = False, **kwargs: Any) -> pandas.DataFrame | None:
         """Fetches the CSV file from the URL or retrieves it from Redis cache if available.
         
         Args:
@@ -150,7 +199,13 @@ class ElectedOfficials(ABC):
         if cached_data:
             self._dataframe = pandas.read_json(io.StringIO(cached_data), orient='records')
         else:
-            self._dataframe = await self.fetch_csv_file()
+            # First, try to get the local parquet file if it exists
+            filepath = self.get_filepath.with_suffix('.parquet')
+            if filepath.exists():
+                self._dataframe = pandas.read_parquet(filepath)
+            else:
+                self._dataframe = await self.fetch_csv_file(**kwargs)
+
             client.set(
                 self.redis_cache_key,
                 self._dataframe.to_json(orient='records'),

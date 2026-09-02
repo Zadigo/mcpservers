@@ -1,7 +1,7 @@
-from models.results import AdditionalInfo, DistrictCouncillorEN, DistrictCouncillorFR
+from models.results import AdditionalInfo, DistrictCouncillorFR, MunicipalCouncillorFR
 
 __all__ = [
     "AdditionalInfo",
-    "DistrictCouncillorEN",
     "DistrictCouncillorFR",
+    "MunicipalCouncillorFR",
 ]

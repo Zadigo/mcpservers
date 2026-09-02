@@ -5,24 +5,38 @@ from typing import Literal
 from fastmcp.tools import ToolResult, tool
 
 from models.base import FileInfo, GroupingByGender, GroupingByJobCategory, get_registry
-from models.results import DatasetResponseModel, DistrictCouncillorEN
+from models.results import DatasetResponseModel, DistrictCouncillorFR
 from utils import df_to_json
 
 
-def _load_district_councilors() -> list[DistrictCouncillorEN] | ToolResult:
-    """Get the dataset of district councilors.    
-    """
-    name = "Élus Conseiller d'Arrondissement"
-    result = get_registry().get_file_by_title(name)
+def _result_no_dataset(name: str) -> ToolResult:
+    return ToolResult(
+        content=f"Dataset '{name}' not found. Available datasets: {get_registry().str_filetitles}",
+        structured_content={'result': []},
+        is_error=True
+    )
 
+
+def _load_district_councilors() -> tuple[FileInfo | None, list[DistrictCouncillorFR] | None]:
+    """Get the dataset of district councilors."""
+    result = get_registry().get_file_by_title("Élus Conseiller d'Arrondissement")
     if result is None:
-        return ToolResult(
-            content=f"Dataset '{name}' not found. Available datasets: {get_registry().str_filetitles}",
-            structured_content={'result': []}
-        )
+        return None, None
 
-    return [
-        DistrictCouncillorEN(**row) 
+    return result, [
+        DistrictCouncillorFR(**row) 
+            for row in result.get_content_as_json()
+    ]
+
+
+def _load_municipal_councilors() -> tuple[FileInfo | None, list[DistrictCouncillorFR] | None]:
+    """Get the dataset of municipal councilors."""
+    result = get_registry().get_file_by_title("Élus Conseiller Municipal")
+    if result is None:
+        return None, None
+
+    return result, [
+        DistrictCouncillorFR(**row) 
             for row in result.get_content_as_json()
     ]
 
@@ -52,27 +66,25 @@ def get_dataset(
         commune_name (str | None): Filter by commune name (case-insensitive exact match).
         gender_code (Literal["M", "F"] | None): Filter by gender.
     """
-    registry = get_registry().filetitles
-    if name != "Élus Conseiller d'Arrondissement":
-        return ToolResult(
-            content=f"Dataset '{name}' not found. Available datasets: {get_registry().str_filetitles}",
-            structured_content={"result": []},
-            is_error=True,
-        )
+    if name == "Élus Conseiller d'Arrondissement":
+        _, records = _load_district_councilors()
+    elif name == "Élus Conseiller Municipal":
+        _, records = _load_municipal_councilors()
+    else:
+        _, records = (None, None)
 
-    records = _load_district_councilors()
-    if isinstance(records, ToolResult):
-        return records  # propagate "not found" from registry lookup
+    if records is None:
+        return _result_no_dataset(name)
 
     # Apply filters
     if department_code is not None:
-        records = [r for r in records if r.department_code == department_code]
+        records = [r for r in records if r.code_du_departement == department_code]
 
     if commune_name is not None:
-        records = [r for r in records if r.commune_name.casefold() == commune_name.casefold()]
+        records = [r for r in records if r.libelle_de_la_commune.casefold() == commune_name.casefold()]
 
     if gender_code is not None:
-        records = [r for r in records if r.gender_code == gender_code]
+        records = [r for r in records if r.code_sexe == gender_code]
 
     total = len(records)
     safe_limit = max(1, min(limit, 200))
@@ -107,7 +119,7 @@ def get_average_age(name: str, by_gender: Literal['M', 'F'] | None  = None) -> f
 
 
 @tool
-def search_elected_official_in_dataset(dataset_name: str, lastname: str | None, firstname: str | None = None) -> list[DistrictCouncillorEN]:
+def search_elected_official_in_dataset(dataset_name: str, lastname: str | None, firstname: str | None = None) -> list[DistrictCouncillorFR]:
     """Retrieve an elected official's information from a specific dataset by their last name and optionally first name.
 
     Args:
@@ -150,7 +162,7 @@ def search_elected_official_in_dataset(dataset_name: str, lastname: str | None, 
         df = df[df['_lastname'] == True]
 
     df = df.drop(columns=['_firstname', '_lastname'])
-    return [DistrictCouncillorEN(**item) for item in df_to_json(df)]
+    return [DistrictCouncillorFR(**item) for item in df_to_json(df)]
 
 
 @tool
