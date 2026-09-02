@@ -31,8 +31,10 @@ async def lifespan(app: FastMCP):
     # semaphore = asyncio.Semaphore(2)
     # async with semaphore:
     #     await asyncio.gather(*tasks)
-
-    yield
+    try:
+        yield
+    finally:
+        pass
 
 
 app = FastMCP(
@@ -48,10 +50,11 @@ app = FastMCP(
 app.add_provider(SkillsDirectoryProvider(roots=BASE_DIR.joinpath(".claude", "skills")))
 
 
+
 @app.completion
 def complete(ref: PromptReference, argument: PromptArgument, context: CompletionContext):
     def run_filter():
-        return [value for value in registry.filenames if argument.value.lower() in value.lower()]
+        return [value for value in registry.filetitles if argument.value.lower() in value.lower()]
 
     registry = get_registry()
     if isinstance(ref, PromptReference) and ref.name == "ask_about_single_dataset" and argument.name == "name":
@@ -61,6 +64,10 @@ def complete(ref: PromptReference, argument: PromptArgument, context: Completion
         return run_filter()
 
     if isinstance(ref, PromptReference) and ref.name == "ask_about_dataset" and argument.name == "name":
+        return run_filter()
+
+    prompts = ['distribution_by_gender', 'get_dataset']
+    if argument.name == 'name':
         return run_filter()
             
     return None

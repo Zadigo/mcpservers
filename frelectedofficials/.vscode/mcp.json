@@ -1,0 +1,14 @@
+{
+    "servers": {
+       "French Elected Officials": {
+        "command": "uv",
+        "args": [
+            "run",
+            "--with",
+            "fastmcp",
+            "fastmcp",
+            "run",
+            "/Volumes/Coding/Projects/Open-Source/mcpservers/frelectedofficials/app.py"
+        ]
+    }
+}

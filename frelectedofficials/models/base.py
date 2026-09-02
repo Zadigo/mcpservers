@@ -1,9 +1,12 @@
+import io
 import json
+import pathlib
 from functools import lru_cache
 
+import pandas
 import pydantic
 
-from utils import MEDIA_DIR, REGISTRY
+from utils import MEDIA_DIR, REGISTRY, redis_client
 
 
 class FileInfo(pydantic.BaseModel):
@@ -11,14 +14,38 @@ class FileInfo(pydantic.BaseModel):
     filepath: str
     created_on: str
 
+    @property
+    def filename(self):
+        return pathlib.Path(self.filepath).name
+
+    def get_content(self) -> pandas.DataFrame:
+        client = redis_client()
+        data = client.get(f'{self.filename}:data')
+
+        if data is not None:
+            return pandas.read_csv(io.StringIO(data), sep=';')
+        
+        with open(self.filepath, 'r', encoding='utf-8') as f:
+            df = pandas.read_csv(f, encoding='utf-8')
+            client.set(f'{self.filename}:data', df.to_csv(index=False))
+            return df
+
+    def get_content_as_model[T = pydantic.BaseModel](self, model: type[T]) -> list[T]:
+        df = self.get_content()
+        return [model(**row) for row in json.loads(df.to_json(orient='records'))]
+
 
 class RegistryInfo(pydantic.BaseModel):
     count: int
     files: list[FileInfo]
 
     @property
-    def filenames(self):
+    def filetitles(self):
         return [item.title for item in self.files]
+
+    @property
+    def str_filetitles(self):
+        return ', '.join(self.filetitles)
 
     async def create_file(self):
         fullpath = MEDIA_DIR / 'registry.json'
@@ -34,6 +61,11 @@ class RegistryInfo(pydantic.BaseModel):
             if file_info.title == title:
                 return file_info
         return None
+
+
+class GroupingByGender(pydantic.BaseModel):
+    F: int
+    H: int
 
 
 @lru_cache(maxsize=1)
