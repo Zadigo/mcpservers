@@ -73,10 +73,7 @@ class RegistryInfo(pydantic.BaseModel):
         if fullpath.exists():
             async with aiofiles.open(fullpath, 'r+', encoding='utf-8') as f:
                 json_data = json.loads(await f.read())
-                json_data['files'] = [
-                    f.model_dump()
-                    for f in self.files
-                ]
+                json_data['files'] = [f.model_dump() for f in self.files]
                 json.dump(json_data, f)
         else:
             async with aiofiles.open(fullpath, 'w', encoding='utf-8') as f:

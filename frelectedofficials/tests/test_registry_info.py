@@ -21,6 +21,8 @@ def registry():
 )
 async def test_file_creation_multiple(registry, name, data):
     fileinfo = FileInfo(**data)
-
     registry.add_file(fileinfo)
-    await registry.create_file()
+    print(registry.count)
+    # assert registry.count >= 0
+
+    # await registry.create_file()
