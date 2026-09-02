@@ -19,9 +19,6 @@ def get_dataset(name: str) -> list[DistrictCouncillorEN] | ToolResult:
     
     Args:
         name (str): The name of the dataset to retrieve.
-
-    Returns:
-        list[DistrictCouncillorEN] | ToolResult: The dataset model or an error message if not found.
     """
     if name == "Élus Conseiller d'Arrondissement":
         return get_district_councilor_dataset()
@@ -35,10 +32,7 @@ def get_dataset(name: str) -> list[DistrictCouncillorEN] | ToolResult:
 
 @tool
 def get_district_councilor_dataset() -> list[DistrictCouncillorEN] | ToolResult:
-    """Get the dataset of district councilors.
-    
-    Returns:
-        list[DistrictCouncillorEN] | ToolResult: A list of district councilor models or an error message if not found.
+    """Get the dataset of district councilors.    
     """
     name = "Élus Conseiller d'Arrondissement"
     result = get_registry().get_file_by_title(name)
@@ -63,9 +57,6 @@ def get_elected_official_in_dataset(lastname: str, dataset_name: str, firstname:
         lastname (str): The last name of the elected official.
         dataset_name (str): The name of the dataset to search in.
         firstname (str | None): The first name of the elected official (optional).
-
-    Returns:
-        dict | ToolResult: The elected official's information or an error message if not found.
     """
     registry = get_registry()
     dataset = registry.get_file_by_title(dataset_name)

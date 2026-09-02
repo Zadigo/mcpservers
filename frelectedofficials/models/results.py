@@ -78,3 +78,4 @@ class DistrictCouncillorEN(AdditionalInfo, pydantic.BaseModel):
     mandate_start_date: str | None = None
     function_name: str | None = None
     function_start_date: str | None = None
+

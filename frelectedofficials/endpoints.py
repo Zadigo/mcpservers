@@ -122,20 +122,38 @@ class ElectedOfficials(ABC):
 
             return self._dataframe
 
-    async def fetch_cache_or_csv(self):
-        """Fetches the CSV file from the URL or retrieves it from Redis cache if available."""
+    async def fetch_cache_or_csv(self, force_clear_cache: bool = False) -> pandas.DataFrame | None:
+        """Fetches the CSV file from the URL or retrieves it from Redis cache if available.
+        
+        Args:
+            force_clear_cache (bool): If True, clears the Redis cache before fetching the data.
+        """
+        columns_cache_key = self.redis_cache_key.removesuffix(':data') + ':columns'
+
         client = redis_client()
+        if force_clear_cache:
+            client.delete(self.redis_cache_key)
+            client.delete(columns_cache_key)
+
         cached_data = client.get(self.redis_cache_key)
 
         if cached_data:
-            self._dataframe = pandas.read_csv(io.StringIO(cached_data), sep=';')
+            self._dataframe = pandas.read_json(io.StringIO(cached_data), orient='records')
         else:
             self._dataframe = await self.fetch_csv_file()
             client.set(
                 self.redis_cache_key,
-                self._dataframe.to_csv(index=False, sep=';'),
+                self._dataframe.to_json(orient='records'),
                 ex=(15 * 24 * 60 * 60)  # Cache for 15 days
             )
+            client.lpush(
+                columns_cache_key,
+                *self._dataframe.columns.to_list()
+            )
+            client.expire(
+                columns_cache_key, 
+                (15 * 24 * 60 * 60)
+            )  # Cache for 15 days
 
         return self._dataframe
 
