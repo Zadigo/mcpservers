@@ -1,6 +1,13 @@
 import pydantic
 
 
+class DatasetResponseModel(pydantic.BaseModel):
+    total: int = 0
+    limit: int = 10
+    offset: int = 0
+    results: list[dict] = []
+
+
 class AdditionalInfo(pydantic.BaseModel):
     """Represents additional information about an elected official.
     

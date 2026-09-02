@@ -5,8 +5,26 @@ from typing import Literal
 from fastmcp.tools import ToolResult, tool
 
 from models.base import FileInfo, GroupingByGender, GroupingByJobCategory, get_registry
-from models.results import DistrictCouncillorEN
+from models.results import DatasetResponseModel, DistrictCouncillorEN
 from utils import df_to_json
+
+
+def _load_district_councilors() -> list[DistrictCouncillorEN] | ToolResult:
+    """Get the dataset of district councilors.    
+    """
+    name = "Élus Conseiller d'Arrondissement"
+    result = get_registry().get_file_by_title(name)
+
+    if result is None:
+        return ToolResult(
+            content=f"Dataset '{name}' not found. Available datasets: {get_registry().str_filetitles}",
+            structured_content={'result': []}
+        )
+
+    return [
+        DistrictCouncillorEN(**row) 
+            for row in result.get_content_as_json()
+    ]
 
 
 @tool
@@ -16,19 +34,54 @@ def list_datasets() -> list[FileInfo]:
 
 
 @tool
-def get_dataset(name: str) -> list[DistrictCouncillorEN] | ToolResult:
-    """Get a dataset by name.
-    
+def get_dataset(
+    name: str,
+    limit: int = 50,
+    offset: int = 0,
+    department_code: int | None = None,
+    commune_name: str | None = None,
+    gender_code: Literal["M", "F"] | None = None,
+) -> DatasetResponseModel | ToolResult:
+    """Get a page of a dataset by name, with optional filtering.
+
     Args:
         name (str): The name of the dataset to retrieve.
+        limit (int): Max number of records to return (default 50, capped at 200).
+        offset (int): Number of records to skip (for pagination).
+        department_code (int | None): Filter by department code.
+        commune_name (str | None): Filter by commune name (case-insensitive exact match).
+        gender_code (Literal["M", "F"] | None): Filter by gender.
     """
-    if name == "Élus Conseiller d'Arrondissement":
-        return get_district_councilor_dataset()
+    if name != "Élus Conseiller d'Arrondissement":
+        return ToolResult(
+            content=f"Dataset '{name}' not found. Available datasets: {get_registry().str_filetitles}",
+            structured_content={"result": []},
+            is_error=True,
+        )
 
-    return ToolResult(
-        content=f"Dataset '{name}' not found. Available datasets: {get_registry().str_filetitles}",
-        structured_content={'result': []},
-        is_error=True
+    records = _load_district_councilors()
+    if isinstance(records, ToolResult):
+        return records  # propagate "not found" from registry lookup
+
+    # Apply filters
+    if department_code is not None:
+        records = [r for r in records if r.department_code == department_code]
+
+    if commune_name is not None:
+        records = [r for r in records if r.commune_name.casefold() == commune_name.casefold()]
+
+    if gender_code is not None:
+        records = [r for r in records if r.gender_code == gender_code]
+
+    total = len(records)
+    safe_limit = max(1, min(limit, 200))
+    page = records[offset : offset + safe_limit]
+
+    return DatasetResponseModel(
+        total=total,
+        limit=safe_limit,
+        offset=offset,
+        results=page,
     )
 
 
@@ -50,25 +103,6 @@ def get_average_age(name: str, by_gender: Literal['M', 'F'] | None  = None) -> f
     
     df = dataset.get_content()
     return df[~df['age'].isna()]['age'].mean()
-
-
-@tool
-def get_district_councilor_dataset() -> list[DistrictCouncillorEN] | ToolResult:
-    """Get the dataset of district councilors.    
-    """
-    name = "Élus Conseiller d'Arrondissement"
-    result = get_registry().get_file_by_title(name)
-
-    if result is None:
-        return ToolResult(
-            content=f"Dataset '{name}' not found. Available datasets: {get_registry().str_filetitles}",
-            structured_content={'result': []}
-        )
-
-    return [
-        DistrictCouncillorEN(**row) 
-            for row in result.get_content_as_json()
-    ]
 
 
 @tool
@@ -114,6 +148,7 @@ def search_elected_official_in_dataset(dataset_name: str, lastname: str | None, 
     elif lastname is not None:
         df = df[df['_lastname'] == True]
 
+    df = df.drop(columns=['_firstname', '_lastname'])
     return [DistrictCouncillorEN(**item) for item in df_to_json(df)]
 
 
