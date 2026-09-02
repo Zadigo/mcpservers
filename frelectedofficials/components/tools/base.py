@@ -52,6 +52,7 @@ def get_dataset(
         commune_name (str | None): Filter by commune name (case-insensitive exact match).
         gender_code (Literal["M", "F"] | None): Filter by gender.
     """
+    registry = get_registry().filetitles
     if name != "Élus Conseiller d'Arrondissement":
         return ToolResult(
             content=f"Dataset '{name}' not found. Available datasets: {get_registry().str_filetitles}",

@@ -1,5 +1,5 @@
 from endpoints.base import AbstractCreator, ElectedOfficials
-from endpoints.factories import DistrictCouncillor
+from endpoints.factories import DistrictCouncillor, MunicipalCouncillor
 
 
 class ConcreteDistrictCouncillor(AbstractCreator):
@@ -8,3 +8,12 @@ class ConcreteDistrictCouncillor(AbstractCreator):
 
     def factory_method(self) -> ElectedOfficials:
         return DistrictCouncillor()
+
+
+
+class ConcreteMunicipalCouncillor(AbstractCreator):
+    """Concrete implementation of the AbstractCreator for Municipal Councillor elected officials.
+    This class provides a factory method to create an instance of the MunicipalCouncillor class."""
+
+    def factory_method(self) -> ElectedOfficials:
+        return MunicipalCouncillor()

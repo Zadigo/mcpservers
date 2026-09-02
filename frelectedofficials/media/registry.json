@@ -2,10 +2,10 @@
   "count": 1,
   "files": [
     {
-      "title": "Élus Conseiller d'Arrondissement",
-      "filepath": "/Volumes/Coding/Projects/Open-Source/mcpservers/frelectedofficials/media/elus-conseiller-darrondissement-ca.csv",
-      "using": "DistrictCouncillor",
-      "created_on": "2026-09-02T15:11:28.290521+00:00"
+      "title": "Élus Conseiller Municipal",
+      "filepath": "/Volumes/Coding/Projects/Open-Source/mcpservers/frelectedofficials/media/elus-conseiller-municipal-cm.csv",
+      "using": "MunicipalCouncillor",
+      "created_on": "2026-09-02T15:52:25.490205+00:00"
     }
   ]
 }

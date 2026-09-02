@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import io
+import logging
 import pathlib
 from abc import ABC, abstractmethod
 
@@ -11,6 +12,8 @@ import unidecode
 
 from models.base import FileInfo, RegistryInfo
 from utils import MEDIA_DIR, redis_client
+
+logger = logging.getLogger(__name__)
 
 FILE_WRITER_LOCK = asyncio.Lock()
 
@@ -114,16 +117,16 @@ class ElectedOfficials(ABC):
 
             # Calculate the age and years_in_office columns based on 
             # the birth_date and mandate_start_date columns
-            def caculator(column: str) -> pandas.Series:
+            def calculator(column: str) -> pandas.Series:
                 return pandas.to_datetime('today').year - pandas.to_datetime(self._dataframe[column], errors='coerce').dt.year
 
-            self._dataframe['age'] = caculator('date_de_naissance')
-            self._dataframe['duree_du_mandat'] = caculator('date_de_debut_du_mandat')
+            self._dataframe['age'] = calculator('date_de_naissance')
+            self._dataframe['duree_du_mandat'] = calculator('date_de_debut_du_mandat')
 
             self._dataframe.to_parquet(MEDIA_DIR / self.filename.replace('.csv', '.parquet'), index=False)
 
-            if self.translation_dict:
-                self._dataframe.rename(columns=self.translation_dict, inplace=True)
+            # if self.translation_dict:
+            #     self._dataframe.rename(columns=self.translation_dict, inplace=True)
 
             return self._dataframe
 
@@ -134,6 +137,8 @@ class ElectedOfficials(ABC):
             force_clear_cache (bool): If True, clears the Redis cache before fetching the data.
         """
         columns_cache_key = self.redis_cache_key.removesuffix(':data') + ':columns'
+
+        logger.info(f"Fetching elected officials data for {self.fr_title} from cache or CSV file.")
 
         client = redis_client()
         if force_clear_cache:

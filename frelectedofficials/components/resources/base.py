@@ -3,17 +3,14 @@ import json
 import aiofiles
 from fastmcp.exceptions import ResourceError
 from fastmcp.resources import (
+    ResourceContent,
     ResourceResult,
     resource,
 )
-from mcp.types import TextResourceContents
-from pydantic import AnyUrl
 
 from models.base import get_registry
 from models.results import DistrictCouncillorEN
 from utils import BASE_DIR
-
-RESOURCE_URI = "dataset://elus-conseiller-darrondissement"
 
 
 @resource('file:///components/resources/templates/data-gouv.md')
@@ -29,7 +26,7 @@ async def global_dataset_information():
         return "Resource not found: data-gouv.md"
 
 
-@resource(RESOURCE_URI)
+@resource("dataset://elus-conseiller-darrondissement")
 def get_district_councillors_dataset() -> ResourceResult:
     """Get the dataset of district councilors as a downloadable resource.
 
@@ -57,10 +54,16 @@ def get_district_councillors_dataset() -> ResourceResult:
 
     return ResourceResult(
         contents=[
-            TextResourceContents(
-                uri=str(AnyUrl(RESOURCE_URI)),
-                mimeType="application/json",
-                text=payload,
+            ResourceContent(
+                content=payload,
+                mime_type="application/json",
+                meta={
+                    "title": name,
+                    "description": "Dataset of district councilors in France, provided by the Répertoire National des Élus.",
+                    "source": "https://www.data.gouv.fr/datasets/repertoire-national-des-elus-1",
+                    "format": "JSON",
+                    "size": len(records),
+                }
             )
         ]
     )

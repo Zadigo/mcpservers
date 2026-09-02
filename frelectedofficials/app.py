@@ -15,6 +15,7 @@ from mcp.types import (
 
 from endpoints import (
     ConcreteDistrictCouncillor,
+    ConcreteMunicipalCouncillor,
     generate_elected_officials,
 )
 from endpoints.base import AbstractCreator
@@ -28,7 +29,8 @@ logger = logging.getLogger("freselectedofficials")
 async def lifespan(app: FastMCP):
     try:
         officials: list[AbstractCreator] = [
-            ConcreteDistrictCouncillor()
+            ConcreteDistrictCouncillor(),
+            ConcreteMunicipalCouncillor()
         ]
 
         tasks = [asyncio.create_task(generate_elected_officials(official)) for official in officials]
@@ -40,6 +42,7 @@ async def lifespan(app: FastMCP):
         logger.critical('An error occurred during the lifespan of the MCP server.', exc_info=True)
     finally:
         pass
+
 
 mcp = FastMCP(
     name="French Elected Officials",
