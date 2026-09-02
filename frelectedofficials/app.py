@@ -1,4 +1,4 @@
-# import asyncio
+import asyncio
 from contextlib import asynccontextmanager
 
 from fastmcp.server import FastMCP
@@ -11,27 +11,26 @@ from mcp.types import (
     ResourceTemplateReference,
 )
 
+from endpoints import (
+    AbstractCreator,
+    ConcreteDistrictCouncillor,
+    generate_elected_officials,
+)
 from models.base import get_registry
 from utils import BASE_DIR
-
-# from endpoints import (
-#     AbstractCreator,
-#     ConcreteDistrictCouncillor,
-#     generate_elected_officials,
-# )
 
 
 @asynccontextmanager
 async def lifespan(app: FastMCP):
-    # officials: AbstractCreator = [
-    #     ConcreteDistrictCouncillor()
-    # ]
-
-    # tasks = [asyncio.create_task(generate_elected_officials(official)) for official in officials]
-    # semaphore = asyncio.Semaphore(2)
-    # async with semaphore:
-    #     await asyncio.gather(*tasks)
     try:
+        officials: list[AbstractCreator] = [
+            ConcreteDistrictCouncillor()
+        ]
+
+        tasks = [asyncio.create_task(generate_elected_officials(official)) for official in officials]
+        semaphore = asyncio.Semaphore(2)
+        async with semaphore:
+            await asyncio.gather(*tasks)
         yield
     finally:
         pass

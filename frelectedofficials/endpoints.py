@@ -105,8 +105,16 @@ class ElectedOfficials(ABC):
                 lowercase = column.lower().replace(' ', '_').replace('-', '_').replace("'", '')
                 new_column = unidecode.unidecode(lowercase)  # Remove accents
                 old_columns[column] = new_column
-
             self._dataframe.rename(columns=old_columns, inplace=True)
+
+            # Calculate the age and years_in_office columns based on 
+            # the birth_date and mandate_start_date columns
+            def caculator(column: str) -> pandas.Series:
+                return pandas.to_datetime('today').year - pandas.to_datetime(self._dataframe[column], errors='coerce').dt.year
+
+            self._dataframe['age'] = caculator('date_de_naissance')
+            self._dataframe['duree_du_mandat'] = caculator('date_de_debut_du_mandat')
+
             self._dataframe.to_parquet(MEDIA_DIR / self.filename.replace('.csv', '.parquet'), index=False)
 
             if self.translation_dict:
@@ -146,6 +154,7 @@ class DistrictCouncillor(ElectedOfficials):
             'libelle_de_la_commune': 'commune_name',
             'libelle_du_secteur': 'sector_name',
             'prenom_de_lelu': 'first_name',
+            'nom_de_lelu': 'last_name',
             'code_sexe': 'gender_code',
             'date_de_naissance': 'birth_date',
             'code_de_la_categorie_socio_professionnelle': 'socio_professional_category_code',
@@ -166,6 +175,5 @@ async def generate_elected_officials(creator: AbstractCreator) -> pandas.DataFra
     Args:
         creator (AbstractCreator): An instance of a class that implements the AbstractCreator interface.
     """
-    # registry = JsonRegistry(count=1, files=[])
     registry = RegistryInfo(count=1, files=[])
     return await creator.get_elected_official(registry=registry)

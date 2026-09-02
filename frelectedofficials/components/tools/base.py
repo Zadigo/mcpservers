@@ -136,7 +136,7 @@ def distribution_by_job_category(name: str) -> list[GroupingByJobCategory]:
         )
     
     df = dataset.get_content()
-    count = df['libelle_de_la_categorie_socio_professionnelle'].groupby(df['libelle_de_la_categorie_socio_professionnelle']).count()
+    count = df['socio_professional_category_name'].groupby(df['socio_professional_category_name']).count()
     json_data = json.loads(count.to_json())
 
     return [
