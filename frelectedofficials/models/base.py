@@ -18,16 +18,23 @@ class FileInfo(pydantic.BaseModel):
     def filename(self):
         return pathlib.Path(self.filepath).name
 
-    def get_content(self) -> pandas.DataFrame:
+    def get_content(self, as_json: bool = False) -> pandas.DataFrame | list[dict]:
         client = redis_client()
         data = client.get(f'{self.filename}:data')
 
         if data is not None:
-            return pandas.read_csv(io.StringIO(data), sep=';')
+            df = pandas.read_csv(io.StringIO(data), sep=';')
+            if as_json:
+                return json.loads(df.to_json(orient='records'))
+            return df
         
         with open(self.filepath, 'r', encoding='utf-8') as f:
             df = pandas.read_csv(f, encoding='utf-8')
             client.set(f'{self.filename}:data', df.to_csv(index=False))
+
+            if as_json:
+                return json.loads(df.to_json(orient='records'))
+
             return df
 
     def get_content_as_model[T = pydantic.BaseModel](self, model: type[T]) -> list[T]:
@@ -64,8 +71,13 @@ class RegistryInfo(pydantic.BaseModel):
 
 
 class GroupingByGender(pydantic.BaseModel):
-    F: int
-    H: int
+    F: int = 0
+    H: int = 0
+
+
+class GroupingByJobCategory(pydantic.BaseModel):
+    job_name: str = ''
+    count: int = 0
 
 
 @lru_cache(maxsize=1)

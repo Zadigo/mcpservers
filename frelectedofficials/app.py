@@ -71,7 +71,7 @@ def complete(ref: PromptReference, argument: PromptArgument, context: Completion
     return None
 
 
-def create_app():    
-    return mcp.http_app(path="/mcp")
+# def create_app():    
+#     return mcp.http_app(path="/mcp")
 
-app = create_app()
+# app = create_app()
