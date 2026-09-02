@@ -1,6 +1,8 @@
+import json
 import pathlib
 
 import dotenv
+import pandas
 import redis
 
 dotenv.load_dotenv('.env')
@@ -32,3 +34,13 @@ def redis_client():
             "Could not connect to Redis. Please ensure that the Redis server is running.")
 
     return client
+
+
+def df_to_json(df: pandas.DataFrame) -> list[dict]:
+    return json.loads(df.to_json(orient='records', force_ascii=False))
+
+
+def to_lowercase(value: str | None):
+    if value is None:
+        return value
+    return value.lower()

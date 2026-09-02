@@ -1,10 +1,12 @@
 
 import json
+from typing import Literal
 
 from fastmcp.tools import ToolResult, tool
 
 from models.base import FileInfo, GroupingByGender, GroupingByJobCategory, get_registry
 from models.results import DistrictCouncillorEN
+from utils import df_to_json
 
 
 @tool
@@ -31,6 +33,26 @@ def get_dataset(name: str) -> list[DistrictCouncillorEN] | ToolResult:
 
 
 @tool
+def get_average_age(name: str, by_gender: Literal['M', 'F'] | None  = None) -> float | ToolResult:
+    """Get the average age of elected officials in a dataset.
+    
+    Args:
+        name (str): The name of the dataset to analyze.
+    """
+    registry = get_registry()
+    dataset = registry.get_file_by_title(name)
+    if dataset is None:
+        return ToolResult(
+            content=f"Dataset '{name}' not found. Available datasets: {registry.str_filetitles}",
+            structured_content={'result': 0},
+            is_error=True
+        )
+    
+    df = dataset.get_content()
+    return df[~df['age'].isna()]['age'].mean()
+
+
+@tool
 def get_district_councilor_dataset() -> list[DistrictCouncillorEN] | ToolResult:
     """Get the dataset of district councilors.    
     """
@@ -50,36 +72,49 @@ def get_district_councilor_dataset() -> list[DistrictCouncillorEN] | ToolResult:
 
 
 @tool
-def get_elected_official_in_dataset(lastname: str, dataset_name: str, firstname: str | None = None) -> dict:
+def search_elected_official_in_dataset(dataset_name: str, lastname: str | None, firstname: str | None = None) -> list[DistrictCouncillorEN]:
     """Retrieve an elected official's information from a specific dataset by their last name and optionally first name.
 
     Args:
-        lastname (str): The last name of the elected official.
         dataset_name (str): The name of the dataset to search in.
+        lastname (str | None): The last name of the elected official.
         firstname (str | None): The first name of the elected official (optional).
     """
     registry = get_registry()
-    dataset = registry.get_file_by_title(dataset_name)
-    if dataset is None:
+    fileinfo = registry.get_file_by_title(dataset_name)
+    if fileinfo is None:
         return ToolResult(
             content=f"Dataset '{dataset_name}' not found. Available datasets: {registry.str_filetitles}",
             structured_content={'result': {}},
             is_error=True
         )
 
-    df = dataset.get_content()
-    filtered = df[df['lastname'] == lastname]
-    if firstname is not None:
-        filtered = filtered[filtered['firstname'] == firstname]
+    df = fileinfo.get_content()
 
-    if filtered.empty:
-        return ToolResult(
-            content=f"Elected official '{lastname} {firstname or ''}' not found in dataset '{dataset_name}'.",
-            structured_content={'result': {}},
-            is_error=True
-        )
+    df['_firstname'] = False
+    df['_lastname'] = False
 
-    return filtered.to_dict(orient='records')[0]
+    for item in df.itertuples():
+        if firstname is not None:
+            str_firstname = df.loc[item.Index, 'first_name']
+
+            if firstname in str_firstname:
+                df.loc[item.Index, '_firstname'] = True
+
+        if lastname is not None:
+            str_lastname = df.loc[item.Index, 'last_name']
+            
+            if lastname in str_lastname:
+                df.loc[item.Index, '_lastname'] = True
+
+    if firstname is not None and lastname is not None:
+        df = df[(df['_firstname'] == True) & (df['_lastname'] == True)]
+    elif firstname is not None:
+        df = df[df['_firstname'] == True]
+    elif lastname is not None:
+        df = df[df['_lastname'] == True]
+
+    return [DistrictCouncillorEN(**item) for item in df_to_json(df)]
 
 
 @tool

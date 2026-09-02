@@ -1,4 +1,6 @@
 import asyncio
+import logging
+import sys
 from contextlib import asynccontextmanager
 
 from fastmcp.server import FastMCP
@@ -19,6 +21,8 @@ from endpoints.base import AbstractCreator
 from models.base import get_registry
 from utils import BASE_DIR
 
+logging.basicConfig(level=logging.INFO, stream=sys.stderr)
+logger = logging.getLogger("freselectedofficials")
 
 @asynccontextmanager
 async def lifespan(app: FastMCP):
@@ -32,6 +36,8 @@ async def lifespan(app: FastMCP):
         async with semaphore:
             await asyncio.gather(*tasks)
         yield
+    except Exception:
+        logger.critical('An error occurred during the lifespan of the MCP server.', exc_info=True)
     finally:
         pass
 
@@ -47,6 +53,7 @@ mcp = FastMCP(
 )
 
 mcp.add_provider(SkillsDirectoryProvider(roots=BASE_DIR.joinpath(".claude", "skills")))
+
 
 @mcp.completion
 def complete(ref: PromptReference, argument: PromptArgument, context: CompletionContext):

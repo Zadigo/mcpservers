@@ -15,3 +15,21 @@ fastmcp dev apps app.py
 # Start the inspector
 npx @modelcontextprotocol/inspector uv --directory /path/to/.venv/bin run fastmcp run /path/to/app.py:app
 ```
+
+## Claude
+
+```JSON
+
+"French Elected Officials": {
+  "command": "~/.local/bin/uv",
+  "args": [
+    "run",
+    "--project",
+    "path/to/frelectedofficials",
+    "fastmcp",
+    "run",
+    "path/to/app.py:mcp"
+  ],
+  "env": {}
+}
+```

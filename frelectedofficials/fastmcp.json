@@ -2,7 +2,7 @@
     "$schema": "https://gofastmcp.com/public/schemas/fastmcp.json/v1.json",
     "source": {
         "path": "app.py",
-        "entrypoint": "app"
+        "entrypoint": "mcp"
     },
     "environment": {
         "dependencies": [
