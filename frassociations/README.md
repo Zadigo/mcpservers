@@ -12,6 +12,9 @@ fastmcp dev apps app.py
 
 # Start the inspector
 npx @modelcontextprotocol/inspector uv --directory /path/to/.venv/bin run fastmcp run /path/to/app.py:mcp
+
+# Prefetch all the files
+python /path/to/frassociations
 ```
 
 ## Claude

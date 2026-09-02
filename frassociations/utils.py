@@ -44,6 +44,10 @@ class FilesQueryset:
         self.cache_files_key: str = CACHE_KEY + ':files'
         self.cache_data_key:str = CACHE_KEY + ':data'
 
+    def __repr__(self):
+        self.load_cache()
+        return f"<FilesQueryset [{len(self.files)}]>"
+
     def __iter__(self):
         self.load_cache()
         return iter(self.files)
@@ -65,7 +69,13 @@ class FilesQueryset:
         db.sadd(self.cache_files_key, *[str(file.model_dump()) for file in self.files])
         return self.files
 
-    async def prefetch_files(self, limit: int | None = None) -> pandas.DataFrame:
+    async def prefetch_files(self, limit: int | None = None, clean_cache: bool = False) -> pandas.DataFrame:
+        db = get_redis()
+
+        if clean_cache:
+            db.delete(self.cache_data_key)
+            logger.info("Cache cleared for data")
+
         self.load_cache()
 
         db = get_redis()
@@ -78,11 +88,20 @@ class FilesQueryset:
             return df
 
         async def read_file(fileinfo: models.FileInfo):
+            column_types = {
+                'adrs_repetition': 'str',
+                'adrs_codeinsee': 'str',
+                'adrg_codepostal': 'str',
+                'id_ex': 'str',
+                'siret': 'str',
+                'rup_mi': 'str',
+            }
+
             async with aiofiles.open(fileinfo.path, mode='r') as f:
                 content = await f.read()
                 try:
-                    df = pandas.read_csv(io.StringIO(content), sep=';', encoding='utf-8')
-                    logger.info(f"Read file {fileinfo.path} with {df.describe()} rows")
+                    df = pandas.read_csv(io.StringIO(content), sep=';', encoding='utf-8', dtype=column_types)
+                    logger.info(f"Read file {fileinfo.path} with {df.shape[0]} rows")
                 except Exception as e:
                     logger.error(f"Error reading file {fileinfo.path}: {e}")
                 else:
