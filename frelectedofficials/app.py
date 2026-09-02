@@ -12,10 +12,10 @@ from mcp.types import (
 )
 
 from endpoints import (
-    AbstractCreator,
     ConcreteDistrictCouncillor,
     generate_elected_officials,
 )
+from endpoints.base import AbstractCreator
 from models.base import get_registry
 from utils import BASE_DIR
 
@@ -63,9 +63,9 @@ def complete(ref: PromptReference, argument: PromptArgument, context: Completion
     if isinstance(ref, PromptReference) and ref.name == "ask_about_dataset" and argument.name == "name":
         return run_filter()
 
-    prompts = ['distribution_by_gender', 'get_dataset']
-    if argument.name == 'name':
-        return run_filter()
+    # prompts = ['distribution_by_gender', 'get_dataset']
+    # if argument.name == 'name':
+    #     return run_filter()
             
     return None
 

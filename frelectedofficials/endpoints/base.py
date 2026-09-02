@@ -30,6 +30,7 @@ class AbstractCreator(ABC):
                 FileInfo(
                     title=instance.fr_title,
                     filepath=str(instance.get_filepath),
+                    using=instance.__class__.__name__,
                     created_on=pandas.Timestamp.now(tz='UTC').isoformat()
                 )
             )
@@ -40,13 +41,17 @@ class AbstractCreator(ABC):
         return await instance.get_dataframe()
 
 
-class ConcreteDistrictCouncillor(AbstractCreator):
-    def factory_method(self) -> ElectedOfficials:
-        instance = DistrictCouncillor()
-        return instance
-
-
 class ElectedOfficials(ABC):
+    """Base class for elected officials. This class provides 
+    methods to fetch and process CSV files containing 
+    information about elected officials.
+    
+    Attributes:
+        url (str): The URL to fetch the CSV file from.
+        fr_title (str): The French title of the elected officials.
+        filename (str): The name of the CSV file to save the data to.
+    """
+
     url: str = ''
     fr_title: str = ''
     filename: str = ''
@@ -158,40 +163,10 @@ class ElectedOfficials(ABC):
         return self._dataframe
 
 
-class DistrictCouncillor(ElectedOfficials):
-    url: str = 'https://static.data.gouv.fr/resources/repertoire-national-des-elus-1/20260811-154541/elus-conseiller-darrondissement-ca.csv'
-    filename: str = 'elus-conseiller-darrondissement-ca.csv'
-    fr_title: str = "Élus Conseiller d'Arrondissement"
-
-    @property
-    def translation_dict(self) -> dict[str, str]:
-        return {
-            'code_du_departement': 'department_code',
-            'libelle_du_departement': 'department_name',
-            'code_de_la_commune': 'commune_code',
-            'libelle_de_la_commune': 'commune_name',
-            'libelle_du_secteur': 'sector_name',
-            'prenom_de_lelu': 'first_name',
-            'nom_de_lelu': 'last_name',
-            'code_sexe': 'gender_code',
-            'date_de_naissance': 'birth_date',
-            'code_de_la_categorie_socio_professionnelle': 'socio_professional_category_code',
-            'libelle_de_la_categorie_socio_professionnelle': 'socio_professional_category_name',
-            'date_de_debut_du_mandat': 'mandate_start_date',
-            'libelle_de_la_fonction': 'function_name',
-            'date_de_debut_de_la_fonction': 'function_start_date',
-            'age': 'age',
-            'duree_du_mandat': 'years_in_office'
-        }
-
-    async def get_dataframe(self) -> pandas.DataFrame | None:
-        return await super().get_dataframe()
-
-
 async def generate_elected_officials(creator: AbstractCreator) -> pandas.DataFrame | None:
     """Generates the elected officials data by fetching it from the CSV file or Redis cache.
     Args:
         creator (AbstractCreator): An instance of a class that implements the AbstractCreator interface.
     """
-    registry = RegistryInfo(count=1, files=[])
+    registry = RegistryInfo(count=0, files=[])
     return await creator.get_elected_official(registry=registry)

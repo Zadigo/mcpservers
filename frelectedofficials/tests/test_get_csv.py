@@ -9,11 +9,15 @@ from endpoints import ConcreteDistrictCouncillor, generate_elected_officials
         ConcreteDistrictCouncillor,
     ]
 )
-async def test_district_councillor_get_dataframe(klass):
+async def test_generate_elected_officials(klass):
     result = await generate_elected_officials(klass())
     
     assert result is not None
     assert not result.empty
+
+    # Test cache
+    result = await generate_elected_officials(klass())
+    assert result is not None
 
 
 

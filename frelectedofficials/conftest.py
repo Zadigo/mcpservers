@@ -1,6 +1,6 @@
 import pytest
 
-from endpoints import ElectedOfficials
+from endpoints.factories import ElectedOfficials
 
 
 @pytest.fixture

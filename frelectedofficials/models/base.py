@@ -1,17 +1,29 @@
-import io
+import asyncio
+import inspect
 import json
 import pathlib
 from functools import lru_cache
+from importlib import import_module
 
 import pandas
 import pydantic
 
-from utils import MEDIA_DIR, REGISTRY, redis_client
+from utils import MEDIA_DIR, REGISTRY
 
 
 class FileInfo(pydantic.BaseModel):
+    """Represents information about a file in the registry.
+    
+    Attributes:
+        title (str): The title of the file.
+        filepath (str): The path to the file.
+        using (str): The class factory that created the file.
+        created_on (str): The creation timestamp of the file.
+    """
+
     title: str
     filepath: str
+    using: str
     created_on: str
 
     @property
@@ -19,27 +31,24 @@ class FileInfo(pydantic.BaseModel):
         return pathlib.Path(self.filepath).name
 
     def get_content(self, as_json: bool = False) -> pandas.DataFrame | list[dict]:
-        client = redis_client()
-        data = client.get(f'{self.filename}:data')
+        from endpoints.factories import ElectedOfficials
 
-        if data is not None:
-            df = pandas.read_csv(io.StringIO(data), sep=';')
-            if as_json:
-                return json.loads(df.to_json(orient='records'))
-            return df
-        
-        with open(self.filepath, 'r', encoding='utf-8') as f:
-            df = pandas.read_csv(f, encoding='utf-8')
-            client.set(f'{self.filename}:data', df.to_csv(index=False))
+        try: 
+            module = import_module('endpoints.factories')
+        except ModuleNotFoundError:
+            raise RuntimeError("The 'endpoints.factories' module is not found. Ensure that the module exists and is accessible.")
+        else:
+            candidates: list[type[ElectedOfficials]] = [
+                klass for name, klass in inspect.getmembers(module, inspect.isclass)
+                if name == self.using and issubclass(klass, ElectedOfficials)
+            ]
 
-            if as_json:
-                return json.loads(df.to_json(orient='records'))
-
-            return df
-
-    def get_content_as_model[T = pydantic.BaseModel](self, model: type[T]) -> list[T]:
-        df = self.get_content()
-        return [model(**row) for row in json.loads(df.to_json(orient='records'))]
+            if candidates:
+                klass = candidates[0]
+                instance = klass()
+                return asyncio.run(instance.get_dataframe())
+            
+            raise RuntimeError("No suitable ElectedOfficials class found in 'endpoints.factories' module.")
 
 
 class RegistryInfo(pydantic.BaseModel):
@@ -82,5 +91,6 @@ class GroupingByJobCategory(pydantic.BaseModel):
 
 @lru_cache(maxsize=1)
 def get_registry() -> RegistryInfo:
+    # TODO: Register the registry in redis
     with REGISTRY.open('r') as f:
         return RegistryInfo(**json.load(f))
