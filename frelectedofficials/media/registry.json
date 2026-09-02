@@ -2,10 +2,10 @@
   "count": 1,
   "files": [
     {
-      "title": "Élus Conseiller Municipal",
-      "filepath": "/Volumes/Coding/Projects/Open-Source/mcpservers/frelectedofficials/media/elus-conseiller-municipal-cm.csv",
-      "using": "MunicipalCouncillor",
-      "created_on": "2026-09-02T15:52:25.490205+00:00"
+      "title": "File C",
+      "filepath": "/path/a",
+      "using": "A",
+      "created_on": "2026-09-02"
     }
   ]
 }

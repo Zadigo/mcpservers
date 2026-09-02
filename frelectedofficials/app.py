@@ -25,6 +25,7 @@ from utils import BASE_DIR
 logging.basicConfig(level=logging.INFO, stream=sys.stderr)
 logger = logging.getLogger("freselectedofficials")
 
+
 @asynccontextmanager
 async def lifespan(app: FastMCP):
     try:

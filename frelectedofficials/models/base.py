@@ -70,8 +70,17 @@ class RegistryInfo(pydantic.BaseModel):
 
     async def create_file(self):
         fullpath = MEDIA_DIR / 'registry.json'
-        async with aiofiles.open(fullpath, 'w', encoding='utf-8') as f:
-            await f.write(self.model_dump_json(indent=2, ensure_ascii=False))
+        if fullpath.exists():
+            async with aiofiles.open(fullpath, 'r+', encoding='utf-8') as f:
+                json_data = json.loads(await f.read())
+                json_data['files'] = [
+                    f.model_dump()
+                    for f in self.files
+                ]
+                json.dump(json_data, f)
+        else:
+            async with aiofiles.open(fullpath, 'w', encoding='utf-8') as f:
+                await f.write(self.model_dump_json(indent=2, ensure_ascii=False))
 
     def add_file(self, file_info: FileInfo):
         self.count += 1
