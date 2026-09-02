@@ -1,6 +1,7 @@
 import pytest
 
 from endpoints.factories import ElectedOfficials
+from models.base import FileInfo
 
 
 @pytest.fixture
@@ -17,3 +18,17 @@ def elected_officials() -> ElectedOfficials:
             return super().get_dataframe()
 
     return ElectedOfficialsMock()
+
+
+
+@pytest.fixture
+def fileinfo(tmp_path) -> FileInfo:
+    path = tmp_path.joinpath('test_file.csv')
+    path.write_text('name,age\nAlice,30\nBob,25', encoding='utf-8')
+    
+    return FileInfo(
+        title="Test Dataset", 
+        filepath=str(tmp_path.joinpath('test_file.csv')),
+        using="DistrictCouncillor",
+        created_on="2024-06-01"
+    )

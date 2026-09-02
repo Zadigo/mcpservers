@@ -5,6 +5,7 @@ import pathlib
 from functools import lru_cache
 from importlib import import_module
 
+import aiofiles
 import pandas
 import pydantic
 
@@ -30,7 +31,7 @@ class FileInfo(pydantic.BaseModel):
     def filename(self):
         return pathlib.Path(self.filepath).name
 
-    def get_content(self, as_json: bool = False) -> pandas.DataFrame | list[dict]:
+    def get_content(self) -> pandas.DataFrame:
         from endpoints.factories import ElectedOfficials
 
         try: 
@@ -50,6 +51,10 @@ class FileInfo(pydantic.BaseModel):
             
             raise RuntimeError("No suitable ElectedOfficials class found in 'endpoints.factories' module.")
 
+    def get_content_as_json(self) -> list[dict]:
+        df = self.get_content()
+        return json.loads(df.to_json(indent=2, orient='records', force_ascii=False))
+
 
 class RegistryInfo(pydantic.BaseModel):
     count: int
@@ -65,8 +70,8 @@ class RegistryInfo(pydantic.BaseModel):
 
     async def create_file(self):
         fullpath = MEDIA_DIR / 'registry.json'
-        with fullpath.open('w', encoding='utf-8') as f:
-            f.write(self.model_dump_json(indent=2, ensure_ascii=False))
+        async with aiofiles.open(fullpath, 'w', encoding='utf-8') as f:
+            await f.write(self.model_dump_json(indent=2, ensure_ascii=False))
 
     def add_file(self, file_info: FileInfo):
         self.count += 1

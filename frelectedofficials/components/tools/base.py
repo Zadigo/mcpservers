@@ -45,7 +45,7 @@ def get_district_councilor_dataset() -> list[DistrictCouncillorEN] | ToolResult:
 
     return [
         DistrictCouncillorEN(**row) 
-            for row in result.get_content(as_json=True)
+            for row in result.get_content_as_json()
     ]
 
 
