@@ -13,5 +13,5 @@ fastmcp dev apps app.py
 # Start the Huey task manager
 
 # Start the inspector
-npx @modelcontextprotocol/inspector uv --directory /path/to/.venv/bin run fastmcp run /path/to/app.py:app 
+npx @modelcontextprotocol/inspector uv --directory /path/to/.venv/bin run fastmcp run /path/to/app.py:app
 ```

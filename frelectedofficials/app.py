@@ -36,22 +36,20 @@ async def lifespan(app: FastMCP):
     finally:
         pass
 
-
-app = FastMCP(
+mcp = FastMCP(
     name="French Elected Officials",
     instructions='This is an MCP server for adding context to an LLM about French elected officials.',
     lifespan=lifespan,
     on_duplicate='ignore',
+    strict_input_validation=False, 
     providers=[
         FileSystemProvider(BASE_DIR.joinpath('components'), reload=True)
     ]
 )
 
-app.add_provider(SkillsDirectoryProvider(roots=BASE_DIR.joinpath(".claude", "skills")))
+mcp.add_provider(SkillsDirectoryProvider(roots=BASE_DIR.joinpath(".claude", "skills")))
 
-
-
-@app.completion
+@mcp.completion
 def complete(ref: PromptReference, argument: PromptArgument, context: CompletionContext):
     def run_filter():
         return [value for value in registry.filetitles if argument.value.lower() in value.lower()]
@@ -71,3 +69,9 @@ def complete(ref: PromptReference, argument: PromptArgument, context: Completion
         return run_filter()
             
     return None
+
+
+def create_app():    
+    return mcp.http_app(path="/mcp")
+
+app = create_app()
