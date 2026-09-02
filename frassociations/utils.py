@@ -3,6 +3,7 @@ import io
 import logging
 import os
 import pathlib
+import sys
 from pathlib import Path
 
 import aiofiles
@@ -12,7 +13,8 @@ from dotenv import load_dotenv
 
 import models
 
-logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, stream=sys.stderr)
+logger = logging.getLogger("freselectedofficials")
 
 CACHE_KEY = "frassociations"
 
