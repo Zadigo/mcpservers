@@ -1,3 +1,7 @@
+# Répertoire National des Associations (RNA)
+
+This dataset contains information about associations in France, including their registration details, addresses, and other relevant data. The data is sourced from the Répertoire National des Associations (RNA) and is provided by the French Ministry of the Interior.
+
 ## Description
 
 ### French
