@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastmcp import FastMCP
+from fastmcp.resources import DirectoryResource
 from fastmcp.server.providers import FileSystemProvider, SkillsDirectoryProvider
 from mcp_types import CompletionContext, PromptArgument, PromptReference
 
@@ -32,6 +33,21 @@ mcp = FastMCP(
 )
 
 mcp.add_provider(SkillsDirectoryProvider(roots=BASE_DIR.joinpath(".claude", "skills")))
+
+
+if BASE_DIR.joinpath('resources', 'data').is_dir():
+    fullpath = BASE_DIR.joinpath('resources', 'data')
+
+    static_resources = DirectoryResource(
+        uri="resource://dataset-descriptions",
+        path=fullpath,
+        name="Dataset Descriptions",
+        description="Contains descriptions of various datasets available for analysis.",
+        recursive=False
+    )
+
+    mcp.add_resource(static_resources)
+
 
 @mcp.completion
 async def global_completion(ref: PromptReference, arguments: PromptArgument, context: CompletionContext):
