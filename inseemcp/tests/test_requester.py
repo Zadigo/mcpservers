@@ -2,7 +2,7 @@ from backend.base import (
     MultiCriteriaSearchEstablishment,
     query,
 )
-from backend.models import AND, LegalUnitEnum
+from backend.models import AND, LegalUnitEnum, MultiCriteriaSearchQuery
 
 
 async def test_starts_with():
@@ -18,9 +18,9 @@ async def test_request_builder():
 
 
 async def test_request_builder_with_query():
-    instance = MultiCriteriaSearchEstablishment()
-    
+    instance = MultiCriteriaSearchEstablishment(MultiCriteriaSearchQuery(q='some value'))
     await query(instance)
+
 
 async def test_request_builder_with_and():
     instance = MultiCriteriaSearchEstablishment()

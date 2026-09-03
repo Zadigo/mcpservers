@@ -24,8 +24,10 @@ class AbstractRequester(ABC):
     def update_request_query(self):
         query_data: dict = {}
         if self.query is not None:
-            query_data = query.model_dump()
-        self.request.query_params = self.request.query_params | query_data
+            query_data = self.query.model_dump()
+
+        new_values = self.request.query_params | query_data
+        self.request.add_query_param_from_dict(new_values)
         
 
 class SingleSearchLegalUnit(AbstractRequester):
@@ -46,6 +48,9 @@ class SingleSearchEstablishment(AbstractRequester):
 
 
 class MultiCriteriaSearchMixin(AbstractRequester):
+    def __init__(self, query: MultiCriteriaSearchQuery = None):
+        super().__init__(query)
+
     def starts_with(self, query: str | StartsWithQuery):
         if isinstance(query, str):
             query = StartsWithQuery(q=query)
@@ -67,8 +72,6 @@ class MultiCriteriaSearchMixin(AbstractRequester):
 
 
 class MultiCriteriaSearchLegalUnit(MultiCriteriaSearchMixin):
-    param = 'siren'
-
     def request_builder(self):
         self.request = MultiCriteriaLegalUnitSearchRequest()
         self.update_request_query()
@@ -76,8 +79,8 @@ class MultiCriteriaSearchLegalUnit(MultiCriteriaSearchMixin):
 
 
 class MultiCriteriaSearchEstablishment(MultiCriteriaSearchMixin):
-    param = 'siret'
-
+    """Entrypoint for a sending a multi-criteria search to the Api"""
+    
     def request_builder(self):
         self.request = MultiCriteriaEstablishmentSearchRequest()
         self.update_request_query()
@@ -96,8 +99,19 @@ class BaseRequest(ABC):
     @abstractmethod
     def get_url(self, **kwargs: Any):
         return self.base_url.format(version=self.version, param=self.param, **kwargs)
+
+    def add_query_param_from_dict(self, values: dict, ignore_empty: bool = False):
+        for key, value in values.items():
+            self.add_query_param(key, value, ignore_empty=ignore_empty)
     
-    def add_query_param(self, key: str, value: str):
+    def add_query_param(self, key: str, value: str | None, ignore_empty: bool = False):
+        """Add url params to the request dictionnary by ignoring nullish values"""
+        if value is None:
+            value = ''
+
+        if ignore_empty:
+            return
+        
         if key in self.query_params:
             self.query_params.update(**{key: value})
         else:
