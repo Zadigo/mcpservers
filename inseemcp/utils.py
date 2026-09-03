@@ -24,10 +24,3 @@ def get_redis():
         raise RuntimeError(f"Could not connect to Redis at {redis_url}")
 
     return client
-
-class Requester:
-    base_url: str = None
-
-
-class LegalUnitsRequester(Requester):
-    base_url: str = "https://api.insee.fr/entreprises/sirene/V3"

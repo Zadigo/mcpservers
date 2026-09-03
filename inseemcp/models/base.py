@@ -1,3 +1,5 @@
+import enum
+
 import pydantic
 from pydantic import Field
 
@@ -33,6 +35,9 @@ class LegalUnitsPeriod(pydantic.BaseModel):
 
 
 class LegalUnits(pydantic.BaseModel):
+    """A legal unit according to INSEE's SIRENE database. This model represents 
+    the structure of a legal unit, including its various attributes and characteristics."""
+
     score: float = Field(description="Score de la correspondance entre la recherche et l'unité légale")
     siren: str = Field(description="SIREN de l'unité légale")
     statutDiffusionUniteLegale: str = Field(description="Statut de diffusion de l'unité légale")
@@ -58,3 +63,61 @@ class LegalUnits(pydantic.BaseModel):
     prenomUsuelUniteLegale: str = Field(description="Prénom usuel de l'unité légale")
     pseudonymeUniteLegale: str = Field(description="Pseudonyme de l'unité légale")
     activitePrincipaleNAF25UniteLegale: str = Field(description="Activité principale NAF 25 de l'unité légale")
+
+
+class LegalUnitEnum(enum.Enum):
+    DATE_FIN = 'dateFin'
+    DATE_DEBUT = 'dateDebut'
+    ETAT_ADMINISTRATIF_UNITE_LEGALE = 'etatAdministratifUniteLegale'
+    CHANGEMENT_ETAT_ADMINISTRATIF_UNITE_LEGALE = 'changementEtatAdministratifUniteLegale'
+    NOM_UNITE_LEGALE = 'nomUniteLegale'
+    CHANGEMENT_NOM_UNITE_LEGALE = 'changementNomUniteLegale'
+    NOM_USAGE_UNITE_LEGALE = 'nomUsageUniteLegale'
+    CHANGEMENT_NOM_USAGE_UNITE_LEGALE = 'changementNomUsageUniteLegale'
+    DENOMINATION_UNITE_LEGALE = 'denominationUniteLegale'
+    CHANGEMENT_DENOMINATION_UNITE_LEGALE = 'changementDenominationUniteLegale'
+    DENOMINATION_USUELLE_1_UNITE_LEGALE = 'denominationUsuelle1UniteLegale'
+    DENOMINATION_USUELLE_2_UNITE_LEGALE = 'denominationUsuelle2UniteLegale'
+    DENOMINATION_USUELLE_3_UNITE_LEGALE = 'denominationUsuelle3UniteLegale'
+    CATEGORIE_JURIDIQUE_UNITE_LEGALE = 'categorieJuridiqueUniteLegale'
+    CHANGEMENT_CATEGORIE_JURIDIQUE_UNITE_LEGALE = 'changementCategorieJuridiqueUniteLegale'
+    ACTIVITE_PRINCIPALE_UNITE_LEGALE = 'activitePrincipaleUniteLegale'
+    NOMENCLATURE_ACTIVITE_PRINCIPALE_UNITE_LEGALE = 'nomenclatureActivitePrincipaleUniteLegale'
+    CHANGEMENT_ACTIVITE_PRINCIPALE_UNITE_LEGALE = 'changementActivitePrincipaleUniteLegale'
+    NIC_SIEGE_UNITE_LEGALE = 'nicSiegeUniteLegale'
+    CHANGEMENT_NIC_SIEGE_UNITE_LEGALE = 'changementNicSiegeUniteLegale'
+    ECONOMIE_SOCIALE_SOLIDAIRE_UNITE_LEGALE = 'economieSocialeSolidaireUniteLegale'
+    CHANGEMENT_ECONOMIE_SOCIALE_SOLIDAIRE_UNITE_LEGALE = 'changementEconomieSocialeSolidaireUniteLegale'
+    SOCIETE_MISSION_UNITE_LEGALE = 'societeMissionUniteLegale'
+    CHANGEMENT_SOCIETE_MISSION_UNITE_LEGALE = 'changementSocieteMissionUniteLegale'
+    CARACTERE_EMPLOYEUR_UNITE_LEGALE = 'caractereEmployeurUniteLegale'
+    CHANGEMENT_CARACTERE_EMPLOYEUR_UNITE_LEGALE = 'changementCaractereEmployeurUniteLegale'
+    CHANGEMENT_DENOMINATION_USUELLE_UNITE_LEGALE = 'changementDenominationUsuelleUniteLegale'
+
+
+class LegalUnitsEnum(enum.Enum):
+    SCORE = 'score'
+    SIREN = 'siren'
+    STATUT_DIFFUSION_UNITE_LEGALE = 'statutDiffusionUniteLegale'
+    UNITE_PURGEE_UNITE_LEGALE = 'unitePurgeeUniteLegale'
+    DATE_CREATION_UNITE_LEGALE = 'dateCreationUniteLegale'
+    DATE_NAISSANCE_UNITE_LEGALE = 'dateNaissanceUniteLegale'
+    CODE_COMMUNE_NAISSANCE_UNITE_LEGALE = 'codeCommuneNaissanceUniteLegale'
+    CODE_PAYS_NAISSANCE_UNITE_LEGALE = 'codePaysNaissanceUniteLegale'
+    LIBELLE_NATIONALITE_UNITE_LEGALE = 'libelleNationaliteUniteLegale'
+    IDENTIFIANT_ASSOCIATION_UNITE_LEGALE = 'identifiantAssociationUniteLegale'
+    TRANCHE_EFFECTIFS_UNITE_LEGALE = 'trancheEffectifsUniteLegale'
+    ANNEE_EFFECTIFS_UNITE_LEGALE = 'anneeEffectifsUniteLegale'
+    DATE_DERNIER_TRAITEMENT_UNITE_LEGALE = 'dateDernierTraitementUniteLegale'
+    NOMBRE_PERIODES_UNITE_LEGALE = 'nombrePeriodesUniteLegale'
+    CATEGORIE_ENTREPRISE = 'categorieEntreprise'
+    ANNEE_CATEGORIE_ENTREPRISE = 'anneeCategorieEntreprise'
+    SIGLE_UNITE_LEGALE = 'sigleUniteLegale'
+    SEXE_UNITE_LEGALE = 'sexeUniteLegale'
+    PRENOM_1_UNITE_LEGALE = 'prenom1UniteLegale'
+    PRENOM_2_UNITE_LEGALE = 'prenom2UniteLegale'
+    PRENOM_3_UNITE_LEGALE = 'prenom3UniteLegale'
+    PRENOM_4_UNITE_LEGALE = 'prenom4UniteLegale'
+    PRENOM_USUEL_UNITE_LEGALE = 'prenomUsuelUniteLegale'
+    PSEUDONYME_UNITE_LEGALE = 'pseudonymeUniteLegale'
+    ACTIVITE_PRINCIPALE_NAF_25_UNITE_LEGALE = 'activitePrincipaleNAF25UniteLegale'
