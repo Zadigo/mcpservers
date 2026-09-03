@@ -1,6 +1,17 @@
 ## Presentation
 
-### French
+## Recherche SIREN
+
+Elle interroge l'unité légale (l'entreprise dans sa globalité) à l'aide d'un identifiant à 9 chiffres. L'URL de base correspond à `/siren/`. Elle renvoie les informations générales de l'entreprise.
+
+## Recherche SIRET
+
+Elle interroge un établissement précis (le siège social ou un établissement secondaire) à l'aide d'un identifiant à 14 chiffres (les 9 chiffres du SIREN suivis de 5 chiffres propres à l'établissement). L'URL correspond à `/siret/`. Elle renvoie les informations géographiques et opérationnelles de l'établissement concerné. [[1](https://www.kbis.online/siren-siret/), [2](https://www.mypos.com/fr-fr/blog/guide-entreprise/entreprise-en-france-obtenir-siret-et-siren?srsltid=AfmBOopaxleJxrresZ7wvevde2bxoi8SCuzYcn45FsAFyan3PNX9DkO5), [3](https://bpifrance-creation.fr/encyclopedie/formalites-creation-dune-entreprise/formalites-generalites/numeros-didentification)]
+
+> [!INFO]
+> Une entreprise possède un seul  **SIREN** , mais peut avoir plusieurs **SIRET** si elle dispose de plusieurs sites ou magasins
+
+## Présentation de l'API Sirene
 
 L'API Sirene donne accès aux informations concernant les entreprises et les établissements enregistrés au répertoire interadministratif Sirene depuis sa création en 1973, y compris les unités fermées. Cet accès est permis via trois types de web-services :
 
@@ -166,7 +177,6 @@ L'identifiant Siren est lié à l'existence juridique de l'entreprise et cesse a
 
 * la cessation juridique de l'entreprise : une entreprise est cessée en cas de dissolution s'il s'agit d'une personne morale, et en cas de décès ou lors de la cessation de toute activité s'il s'agit d'un entrepreneur individuel ;
 * la cessation d'activité de l'entreprise : l'entreprise cesse son activité. On parle aussi de cessation économique lorsque tous les établissements de l'entreprise sont fermés.
-
 
 **Code officiel géographique**
 Le code officiel géographique rassemble les codes et libellés des communes, des cantons, des arrondissements, des départements, des régions, des collectivités d'outre-mer, des pays et territoires étrangers.

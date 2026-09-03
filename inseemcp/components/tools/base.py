@@ -1,29 +1,54 @@
-from fastmcp.tools import tool
+from fastmcp.tools import ToolResult, tool
 from pydantic import Field
+
+from backend.base import (
+    SingleSearchEstablishment,
+    SingleSearchQuery,
+    query,
+)
+from models.base import BaseResponseModel
 
 
 @tool
-def search_single_siren(siren: str):
+async def get_siret(siret: str, date: str | None = Field(default=None, description="Date of the SIRET number to search for.")):
+    """
+    Search for a single SIRET number.
+
+    Arguments:
+        siret (str): The SIRET number to search for.
+        date (str | None): The date of the SIRET number to search for.
+    """
+    instance = SingleSearchEstablishment(SingleSearchQuery(siren=siret, date=date))
+    response = await query(instance)
+    return ToolResult(
+        structured_content=response, 
+        meta={
+            "search_type_fr": "établissements"
+        }
+    )
+
+
+
+@tool(tags={'search', 'siren', 'establishment'})
+async def search_all_establishments_with_siren(siren: str) -> BaseResponseModel:
     """
     Search for a single SIREN number.
 
     Arguments:
         siren (str): The SIREN number to search for.
     """
+    # instance = SingleSearchEstablishment(MultiCriteriaSearchQuery(q=siren))
+    # response = await query(instance)
+    # return ToolResult(
+    #     structured_content=response, 
+    #     meta={
+    #         "search_type_fr": "établissements"
+    #     }
+    # )
 
 
 @tool
-def search_single_siret(siret: str):
-    """
-    Search for a single SIRET number.
-
-    Arguments:
-        siret (str): The SIRET number to search for.
-    """
-
-
-@tool
-def search_all_siren_startswith(siren: str):
+async def search_all_siren_startswith(siren: str):
     """
     Search for all SIREN numbers that start with a specific string.
 
@@ -33,31 +58,21 @@ def search_all_siren_startswith(siren: str):
 
 
 @tool
-def search_all_businesses_with_siren(siren: str):
-    """
-    Search for all businesses with a specific SIREN number.
-
-    Arguments:
-        siren (str): The SIREN number of the businesses to search for.
-    """
-
-
-@tool
-def search_all_purged_legal_units():
+async def search_all_purged_legal_units():
     """
     Search for all purged legal units.
     """
 
 
 @tool
-def search_all_purged_establishments():
+async def search_all_purged_establishments():
     """
     Search for all purged establishments.
     """
 
 
 @tool
-def search_all_establishments_within_commune(commune_code: str):
+async def search_all_establishments_within_commune(commune_code: str):
     """
     Search for all establishments within a specific "commune". A "commune" is the smallest administrative 
     division in France, similar to a municipality or township.
@@ -68,7 +83,7 @@ def search_all_establishments_within_commune(commune_code: str):
 
 
 @tool
-def search_for_establishments_by_name(name: str):
+async def search_for_establishments_by_name(name: str):
     """
     Search for establishments with a specific name.
 
@@ -78,7 +93,7 @@ def search_for_establishments_by_name(name: str):
 
 
 @tool
-def search_for_establishments_by_activity_code(activity_code: str = Field(description="The activity code of the establishments to search for.")):
+async def search_for_establishments_by_activity_code(activity_code: str = Field(description="The activity code of the establishments to search for.")):
     """
     Search for establishments with a specific activity code.
 
@@ -88,21 +103,21 @@ def search_for_establishments_by_activity_code(activity_code: str = Field(descri
 
 
 @tool
-def search_for_terminated_legal_units():
+async def search_for_terminated_legal_units():
     """
     Search for all terminated legal units.
     """
 
 
 @tool
-def search_for_establishments_where_legal_unit_is_person():
+async def search_for_establishments_where_legal_unit_is_person():
     """
     Search for all establishments where the legal unit is a person.
     """
 
 
 @tool
-def search_for_establishments_never_closed():
+async def search_for_establishments_never_closed():
     """
     Search for all establishments that have never been c    losed.
     """
@@ -111,7 +126,7 @@ def search_for_establishments_never_closed():
 COLUMNS = Field(default=None, description="The columns to search in.")
 
 @tool
-def multisearch(
+async def multisearch(
     columns: list[str] | None = COLUMNS,
 ):
     """
