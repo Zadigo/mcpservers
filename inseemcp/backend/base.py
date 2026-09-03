@@ -1,81 +1,149 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from collections.abc import Sequence
+from typing import Any, Literal
 from urllib.parse import urlencode
 
-import httpx2
-
-from backend.models import StartsWithQuery
+from backend.models import (
+    AND,
+    OR,
+    MultiCriteriaSearchQuery,
+    SingleSearchQuery,
+    StartsWithQuery,
+)
 
 
 class AbstractRequester(ABC):
+    def __init__(self, query: SingleSearchQuery | MultiCriteriaSearchQuery = None):
+        self.query = query
+        self.request: BaseRequest | None = None
+
+    @abstractmethod
+    def request_builder(self, using: BaseRequest | None = None) -> BaseRequest:
+        pass
+
+    def update_request_query(self):
+        query_data: dict = {}
+        if self.query is not None:
+            query_data = query.model_dump()
+        self.request.query_params = self.request.query_params | query_data
+        
+
+class SingleSearchLegalUnit(AbstractRequester):
+    def __init__(self, query: SingleSearchQuery = None):
+        super().__init__(query)
+
+    def request_builder(self):
+        self.request = SingleSearchLegalUnitRequest()
+        self.update_request_query()
+        return self.request
+
+
+class SingleSearchEstablishment(AbstractRequester):
+    def request_builder(self):
+        self.request = SingleSearchEstablishmentRequest()
+        self.update_request_query()
+        return self.request
+
+
+class MultiCriteriaSearchMixin(AbstractRequester):
+    def starts_with(self, query: str | StartsWithQuery):
+        if isinstance(query, str):
+            query = StartsWithQuery(q=query)
+
+        data = query.model_dump()
+        for key, value in data.items():
+            self.request.add_query_param(key, value)
+
+        return self
+
+    def between(self, query: StartsWithQuery):
+        return self
+
+    def conditional_and(self, *query: AND):
+        return self
+
+    def conditional_or(self, *query: OR):
+        return self
+
+
+class MultiCriteriaSearchLegalUnit(MultiCriteriaSearchMixin):
+    param = 'siren'
+
+    def request_builder(self):
+        self.request = MultiCriteriaLegalUnitSearchRequest()
+        self.update_request_query()
+        return self.request
+
+
+class MultiCriteriaSearchEstablishment(MultiCriteriaSearchMixin):
+    param = 'siret'
+
+    def request_builder(self):
+        self.request = MultiCriteriaEstablishmentSearchRequest()
+        self.update_request_query()
+        return self.request
+
+
+class BaseRequest(ABC):
     version: float = 3.11
-    base_url: str = 'https://api.insee.fr/api-sirene/{version}/'
+    param: Literal['siret', 'siren'] = 'siret'
+    base_url: str = 'https://api.insee.fr/api-sirene/{version}/{param}'
+
+    def __init__(self):
+        self.query_params: dict[str, str] = {}
+        self.conditional_params: Sequence[AND | OR] = []
 
     @abstractmethod
     def get_url(self, **kwargs: Any):
-        return self.base_url.format(version=self.version, **kwargs)
-
-    async def request(self):
-        async with httpx2.AsyncClient() as client:
-            response = await client.get(self.get_url())
-            response.raise_for_status()
-            return response.json()
-
-
-class Siren(AbstractRequester):
-    base_url: str = 'https://api.insee.fr/api-sirene/{version}/{siren}'
-
-    def get_url(self, siren: str):
-        return super().get_url(siren=siren)
-
-
-class Siret(AbstractRequester):
-    """
+        return self.base_url.format(version=self.version, param=self.param, **kwargs)
     
-    ## Examples
+    def add_query_param(self, key: str, value: str):
+        if key in self.query_params:
+            self.query_params.update(**{key: value})
+        else:
+            self.query_params[key] = value
 
-    Recherche de tous les établissement dont le siren commence par 3:
-
-    .. code-block:: markdown
-
-        https://api.insee.fr/api-sirene/3.11/siret?q=siren:3*&champs=siret,denominationUniteLegale&curseur=*
-
-
-    """
-    base_url: str = 'https://api.insee.fr/api-sirene/{version}/{siret}'
+    def add_conditional_param(self, operator: AND | OR):
+        self.conditional_params.append(operator)
     
-    def get_url(self, siret: str):
-        return super().get_url(siret=siret)
+    async def send_request(self, url: str):
+        """Sends a request to the Api using the paramters that
+        were added in the url parameters"""
+        print(f'sending request using the url: {url}')
+
+        # async with httpx2.AsyncClient() as client:
+        #     response = await client.get(url)
+        #     response.raise_for_status()
+        #     return response.json()
+
+
+class SingleSearchLegalUnitRequest(BaseRequest):
+    param ='siren'
     
-
-class AbstractMultiSearch(AbstractRequester):
-    def search_all(self, value: int):
-        """
-        Recherche de tous les établissements du Siren 775672272 :
-
-            https://api.insee.fr/api-sirene/3.11/siret?q=siren:775672272
-        """
-        return urlencode({'q': f'siren:{value}'})
-
-    def start_with(self, query: StartsWithQuery):
-        return urlencode({
-            'q': f'siren:{query.q}*',
-            'champs': ','.join(query.champs),
-            'curseur': query.curseur
-        })
+    def get_url(self, **kwargs: Any):
+       return super().get_url(**kwargs)
 
 
-class MultiSearchSiren(AbstractMultiSearch):
-    base_url: str = 'https://api.insee.fr/api-sirene/3.11/siren?q={query}'
+class SingleSearchEstablishmentRequest(SingleSearchLegalUnitRequest):
+    param = 'siret'
+
+
+class MultiCriteriaLegalUnitSearchRequest(BaseRequest):
+    param = 'siren'
 
     def get_url(self, **kwargs: Any):
-        query_string = urlencode(kwargs)
-        return self.base_url.format(query=query_string)
+        url = super().get_url(**kwargs)
 
+        if self.query_params:
+            url = url + '?' + urlencode(self.query_params)
 
-class MultiSearchSiret(AbstractMultiSearch):
-    base_url: str = 'https://api.insee.fr/api-sirene/3.11/siret?q={query}'
+        return url
 
-    def get_url(self, **kwargs: Any):
-        query_string = urlencode(kwargs)
-        return self.base_url.format(query=query_string)
+    
+class MultiCriteriaEstablishmentSearchRequest(MultiCriteriaLegalUnitSearchRequest):
+    param = 'siret'
+    
+
+async def query(requester: AbstractRequester, **kwargs: Any) -> dict[str, Any]:
+    instance = requester.request_builder()
+    return await instance.send_request(instance.get_url(**kwargs))
