@@ -104,10 +104,16 @@ def search_for_establishments_where_legal_unit_is_person():
 @tool
 def search_for_establishments_never_closed():
     """
-    Search for all establishments that have never been closed.
+    Search for all establishments that have never been c    losed.
     """
 
 
+COLUMNS = Field(default=None, description="The columns to search in.")
+
 @tool
-def multisearch():
-    pass
+def multisearch(
+    columns: list[str] | None = COLUMNS,
+):
+    """
+    Perform an arbitrary search on the dataset
+    """

@@ -1,5 +1,9 @@
+
 from backend.operators import And, KeyValuePair, Or
-from models.base import BaseResponseModel, LegalUnitEnum
+from models.base import (
+    BaseResponseModel,
+    LegalUnitEnum,
+)
 
 
 def test_and():

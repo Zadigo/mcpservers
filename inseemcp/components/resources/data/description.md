@@ -31,8 +31,7 @@ Institué par les articles [R. 123-220 à R. 123-234](https://www.legifrance.gou
 * les personnes morales de droit privé ou de droit public soumises au droit commercial ;
 * les institutions et services de l'État et les collectivités territoriales, ainsi que tous leurs établissements ;
 * les associations dans certains cas.
-Sont donc inscrites au répertoire tous les entrepreneurs individuels ou les personnes morales :
-
+  Sont donc inscrites au répertoire tous les entrepreneurs individuels ou les personnes morales :
 * immatriculées au Registre du Commerce et des Sociétés ;
 * immatriculées au Répertoire des Métiers ;
 * employant du personnel salarié (à l'exception des particuliers employeurs) ;
@@ -165,8 +164,10 @@ La cessation d'entreprise est pris dans le sens large d'entreprises qui cessent 
 
 L'identifiant Siren est lié à l'existence juridique de l'entreprise et cesse avec elle. Pour tenir compte à la fois des impératifs juridiques et des réalités économiques, il existe deux catégories de cessations :
 
-la cessation juridique de l'entreprise : une entreprise est cessée en cas de dissolution s'il s'agit d'une personne morale, et en cas de décès ou lors de la cessation de toute activité s'il s'agit d'un entrepreneur individuel ;
-la cessation d'activité de l'entreprise : l'entreprise cesse son activité. On parle aussi de cessation économique lorsque tous les établissements de l'entreprise sont fermés.
+* la cessation juridique de l'entreprise : une entreprise est cessée en cas de dissolution s'il s'agit d'une personne morale, et en cas de décès ou lors de la cessation de toute activité s'il s'agit d'un entrepreneur individuel ;
+* la cessation d'activité de l'entreprise : l'entreprise cesse son activité. On parle aussi de cessation économique lorsque tous les établissements de l'entreprise sont fermés.
+
+
 **Code officiel géographique**
 Le code officiel géographique rassemble les codes et libellés des communes, des cantons, des arrondissements, des départements, des régions, des collectivités d'outre-mer, des pays et territoires étrangers.
 
@@ -195,7 +196,7 @@ L'activité principale exercée (APE) des entreprises et des établissements au 
 
 La version en vigueur (rév. 2, 2008) est la nouvelle nomenclature statistique nationale depuis le 1^er^ janvier 2008. Elle reprend tous les niveaux de la nomenclature européenne et y ajoute un niveau national pour tenir compte des spécificités et des habitudes françaises (quatre chiffres et une lettre).
 
-[La nomenclature d'activités française - NAF rév. 2, 2008.](https://www.insee.fr/fr/metadonnees/nafr2/section/A) aussi [disponible en local](./naf.csv)
+[La nomenclature d&#39;activités française - NAF rév. 2, 2008.](https://www.insee.fr/fr/metadonnees/nafr2/section/A) aussi [disponible en local](./naf.csv)
 
 **Siège**
 
@@ -226,78 +227,6 @@ Elle doit être déclarée aux administrations compétentes (greffes, Sécurité
 
 > [!NOTE]
 > Ne pas confondre avec la définition de l’entreprise au sens de la loi de modernisation de l'économie (LME), qui est une unité statistique.
-
-## Les services de l'API Sirene
-
-### Recherche unitaire - Présentation du service
-
-Le service de recherche unitaire sur Siren ou Siret permet d’interroger l'API Sirene selon deux optiques différentes :
-
-* obtenir l’historique complet de l'unité légale ou de l'établissement correspondant
-* obtenir la situation de l'unité légale ou de l'établissement correspondant à une date donnée
-
-En effet, certaines variables du répertoire sont disponibles pour l'ensemble des valeurs successives qu'elles ont prises au cours de la vie de l'unité légale ou de l'établissement : elles sont dites historisées.
-
-D'autres variables ne sont disponibles que dans leur valeur courante : elles sont dites non historisées.
-
-Dans le cas d'une recherche sur un siren en doublon, l'API redirige vers l'unité légale doublonnée.
-
-Dans le cas d'une recherche sur un siret associé à un siren en doublon, l'API redirige vers l'établissement siège de l'unité légale doublonnée.
-
-## URL d'accès
-
-Il s'agit d'un service web de type REST, qui s'appuie donc uniquement sur les protocoles et standards utilisés sur le web. L'invocation du service se fait par envoi d'une requête HTTPS (de type GET) sur une URL publique.
-
-URL d'accès au service de recherche unitaire sur le Siren :
-
-```text
-https://api.insee.fr/api-sirene/3.11/siren/{siren}
-```
-
-URL d'accès au service de recherche unitaire sur le Siret :
-
-```text
-https://api.insee.fr/api-sirene/3.11/siret/{siret}
-```
-
-**En-tête de la requête**
-
-L'authentification se fait en passant votre clé d'accès dans l'en-tête Authorization, accompagné du verbe « GET ». Cette clé est fournie par le portail des APIs de l'Insee.
-
-Le seul format de données possible est le json : Accept = application/json.
-
-Le contenu de la réponse peut être compressé afin de limiter sa taille. L'algorithme de compression utilisé est le gzip. Pour recevoir une réponse compressée, il faut ajouter dans l'en-tête HTTP le paramètre Accept-Encoding = gzip.
-
-**Corps de la requête**
-
-Les paramètres de la requête sont les suivants, le seul paramètre obligatoire étant le siren/siret :
-
-**siren ou siret**
-
-**date** (de la forme AAAA-MM-JJ) : voir chapitre Paramètres d'une requête > Recherche sur date
-**champs** : voir chapitre Paramètres d'une requête > Sélection des champs
-**masquerValeursNulles** : voir chapitre Paramètres d'une requête > Masquer les valeurs nulles
-
-Dans la requête URL :
-
-* le séparateur entre le siren/siret et un éventuel paramètre facultatif est le « ? »
-* le séparateur entre deux paramètres facultatifs est le « & »
-
-**Obtenir l'historique complet**
-
-Il s'agit du mode d'interrogation par défaut. À partir d'un Siren ou Siret donné, le service permet de récupérer l'historique complet présent dans le répertoire pour l'unité légale ou l'établissement correspondant, jusqu'à la veille du jour d'interrogation.
-
-**Obtenir la période qui englobe la date demandée**
-
-La requête passée avec le paramètre facultatif date permet de récupérer uniquement la période de l'unité légale ou de l'établissement contenant la date passée en paramètre :
-
-```text
-https://api.insee.fr/api-sirene/3.11/siren/{siren}?date={date}
-
-https://api.insee.fr/api-sirene/3.11/siret/{siret}?date={date}
-```
-
-Si la date renseignée dans le paramètre est antérieure à la première période, le service renvoie une erreur.
 
 # References
 

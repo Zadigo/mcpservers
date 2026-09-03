@@ -1,10 +1,17 @@
+import itertools
 from contextlib import asynccontextmanager
 
 from fastmcp import FastMCP
 from fastmcp.resources import DirectoryResource
 from fastmcp.server.providers import FileSystemProvider, SkillsDirectoryProvider
-from mcp_types import CompletionContext, PromptArgument, PromptReference
+from mcp_types import (
+    CompletionContext,
+    PromptArgument,
+    PromptReference,
+    ResourceTemplateReference,
+)
 
+from models.base import EstablishmentEnum, LegalUnitEnum
 from utils import BASE_DIR, logger
 
 INSTRUCTIONS: str = """
@@ -50,5 +57,16 @@ if BASE_DIR.joinpath('resources', 'data').is_dir():
 
 
 @mcp.completion
-async def global_completion(ref: PromptReference, arguments: PromptArgument, context: CompletionContext):
-    pass
+async def complet(ref: PromptReference | ResourceTemplateReference, argument: PromptArgument, context: CompletionContext):
+    if isinstance(ref, PromptReference):
+        if ref.name == 'explain_column' and argument.name == 'column_name':
+            column_names = itertools.chain(
+                {item for item in LegalUnitEnum.__members__},
+                {item for item in EstablishmentEnum.__members__}
+            )
+            return sorted(column_names)
+
+        if argument.name == 'test':
+            pass
+
+    return None

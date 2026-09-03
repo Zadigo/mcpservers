@@ -1,5 +1,7 @@
 # Tableau de réponse de l’API Sirene
 
+Ce document décrit les variables retournées par l’API Sirene pour les unités légales et les établissements. Il est à jour pour la version 3.11 de l’API.
+
 | Variable                                      | longueur | Contenu                                                                                                                                               | Commentaire                                                                                                                               |
 | --------------------------------------------- | -------: | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | siren                                         |        9 | Numéro Siren de l'entreprise                                                                                                                          | Toujours renseigné                                                                                                                        |
