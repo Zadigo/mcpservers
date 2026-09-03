@@ -12,14 +12,16 @@ def dataset_description():
                 content=FileResource(
                     title='Dataset Description',
                     description='A detailed description of the dataset and column definitions.',
-                    path=RESOURCE_DIR / 'description.md'
+                    path=str(RESOURCE_DIR / 'description.md'),
+                    uri=RESOURCE_DIR.joinpath('description.md').as_uri(),
                 )
             ),
             ResourceContent(
                 content=FileResource(
                     title='NAF Codes',
                     description='List of NAF codes with their corresponding descriptions.',
-                    path=RESOURCE_DIR / 'naf.csv',
+                    path=str(RESOURCE_DIR / 'naf.csv'),
+                    uri=RESOURCE_DIR.joinpath('naf.csv').as_uri(),
                     mime_type='text/csv',
                     tags={'naf', 'code', 'description'}
                 )
