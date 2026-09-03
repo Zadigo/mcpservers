@@ -34,6 +34,8 @@ mcp = FastMCP(
     name='FR INSEE Business Analyst Assistant',
     instructions=INSTRUCTIONS,
     lifespan=lifespan,
+    on_duplicate='ignore',
+    strict_input_validation=False,
     providers=[
         FileSystemProvider(BASE_DIR.joinpath('components'), reload=True)
     ]
@@ -42,8 +44,8 @@ mcp = FastMCP(
 mcp.add_provider(SkillsDirectoryProvider(roots=BASE_DIR.joinpath(".claude", "skills")))
 
 
-if BASE_DIR.joinpath('resources', 'data').is_dir():
-    fullpath = BASE_DIR.joinpath('resources', 'data')
+if BASE_DIR.joinpath('components', 'resources', 'data').is_dir():
+    fullpath = BASE_DIR.joinpath('components', 'resources', 'data')
 
     static_resources = DirectoryResource(
         uri="resource://dataset-descriptions",

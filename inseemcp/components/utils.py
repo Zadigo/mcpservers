@@ -4,12 +4,12 @@ from collections.abc import Sequence
 import pandas
 import pydantic
 
-from models.base import LegalUnits
+from models.base import LegalUnitModel
 
 
-def dataframe_to_models(df: pandas.DataFrame) -> list[LegalUnits]:
+def dataframe_to_models(df: pandas.DataFrame) -> list[LegalUnitModel]:
     json_data = json.loads(df.to_json(orient='records'))
-    return [LegalUnits(**item) for item in json_data]
+    return [LegalUnitModel(**item) for item in json_data]
 
 
 class PaginationInfo(pydantic.BaseModel):
@@ -27,7 +27,7 @@ class PaginationInfo(pydantic.BaseModel):
     number_of_pages: int
 
 
-def paginate[T = LegalUnits](limit: int = 100, offset: int = 0, values: Sequence[T] = ()) -> tuple[list[T], PaginationInfo]:
+def paginate[T = LegalUnitModel](limit: int = 100, offset: int = 0, values: Sequence[T] = ()) -> tuple[list[T], PaginationInfo]:
     limit = min(limit, 100)
     offset = min(offset, len(values))
 
