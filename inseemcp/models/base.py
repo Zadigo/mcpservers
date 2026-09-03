@@ -66,12 +66,12 @@ class LegalUnitModel(pydantic.BaseModel):
     prenom2UniteLegale: str | None = Field(default=None, description="Prénom 2 de l'unité légale")
     prenom3UniteLegale: str | None = Field(default=None, description="Prénom 3 de l'unité légale")
     prenom4UniteLegale: str | None = Field(default=None, description="Prénom 4 de l'unité légale")
-    prenomUsuelUniteLegale: str = Field(description="Prénom usuel de l'unité légale")
-    pseudonymeUniteLegale: str = Field(description="Pseudonyme de l'unité légale")
-    activitePrincipaleUniteLegale: str = Field(description="Activité principale de l'unité légale")
-    nomenclatureActivitePrincipaleUniteLegale: str = Field(description="Nomenclature de l'activité principale de l'unité légale")
-    identifiantAssociationUniteLegale: str = Field(description="Identifiant de l'association de l'unité légale")
-    economieSocialeSolidaireUniteLegale: str = Field(description="Économie sociale et solidaire de l'unité légale")
+    prenomUsuelUniteLegale: str | None = Field(default=None, description="Prénom usuel de l'unité légale")
+    pseudonymeUniteLegale: str | None = Field(default=None, description="Pseudonyme de l'unité légale")
+    activitePrincipaleUniteLegale: str | None = Field(default=None, description="Activité principale de l'unité légale")
+    nomenclatureActivitePrincipaleUniteLegale: str | None = Field(default=None, description="Nomenclature de l'activité principale de l'unité légale")
+    identifiantAssociationUniteLegale: str | None = Field(default=None, description="Identifiant de l'association de l'unité légale")
+    economieSocialeSolidaireUniteLegale: str | None = Field(default=None, description="Économie sociale et solidaire de l'unité légale")
     societeMissionUniteLegale: str | None = Field(default=None, description="Société mission de l'unité légale")
     caractereEmployeurUniteLegale: str | None = Field(default=None, description="Caractère employeur de l'unité légale")
     trancheEffectifsUniteLegale: str = Field(description="Tranche effectifs de l'unité légale")
@@ -94,10 +94,10 @@ class LegalUnitPeriodModel(pydantic.BaseModel):
     changementEnseigneEtablissement: bool = Field(default=False, description="Changement de l'enseigne de l'établissement")
     denominationUsuelleEtablissement: str | None = Field(default=None, description="Dénomination usuelle de l'établissement")
     changementDenominationUsuelleEtablissement: bool = Field(default=False, description="Changement de la dénomination usuelle de l'établissement")
-    activitePrincipaleEtablissement: str = Field(description="Activité principale de l'établissement")
-    nomenclatureActivitePrincipaleEtablissement: str = Field(description="Nomenclature de l'activité principale de l'établissement")
+    activitePrincipaleEtablissement: str | None = Field(default=None, description="Activité principale de l'établissement")
+    nomenclatureActivitePrincipaleEtablissement: str | None = Field(default=None, description="Nomenclature de l'activité principale de l'établissement")
     changementActivitePrincipaleEtablissement: bool = Field(default=False, description="Changement de l'activité principale de l'établissement")
-    caractereEmployeurEtablissement: str = Field(description="Caractère employeur de l'établissement")
+    caractereEmployeurEtablissement: str | None = Field(default=None, description="Caractère employeur de l'établissement")
     changementCaractereEmployeurEtablissement: bool = Field(default=False, description="Changement du caractère employeur de l'établissement")
 
 
@@ -116,9 +116,22 @@ class EstablishmentModel(pydantic.BaseModel):
     nombrePeriodesEtablissement: int = Field(description="Nombre périodes de l'établissement")
     activitePrincipaleNAF25Etablissement: str = Field(description="Activité principale NAF 25 de l'établissement")
     uniteLegale: LegalUnitModel = Field(description="List of legal units associated with the establishment")
-    adresseEtablissement: AddressModel = AddressModel
-    adresse2Etablissement: Address2Model = Address2Model
-    periodesEtablissement = None
+    adresseEtablissement: AddressModel = Field(description="Address of the establishment")
+    adresse2Etablissement: Address2Model = Field(description="Secondary address of the establishment")
+    periodesEtablissement: list[LegalUnitPeriodModel] = Field(description="List of periods associated with the establishment")
+
+
+class HeaderModel(pydantic.BaseModel):
+    statut: int = Field(description="Statut of the response")
+    message: str = Field(description="Message of the response")
+    total: int = Field(description="Total number of results")
+    debut: int = Field(description="Starting index of the results")
+    nombre: int = Field(description="Number of results returned in the response")
+
+
+class BaseResponseModel(pydantic.BaseModel):
+    header: HeaderModel = Field(description="Header of the response")
+    etablissements: list[EstablishmentModel] = Field(description="List of etablissements data")
 
 
 # class LegalUnitsPeriod(pydantic.BaseModel):
