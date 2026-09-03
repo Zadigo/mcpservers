@@ -2,7 +2,8 @@ from backend.base import (
     MultiCriteriaSearchEstablishment,
     query,
 )
-from backend.models import AND, LegalUnitEnum, MultiCriteriaSearchQuery
+from backend.models import MultiCriteriaSearchQuery
+from backend.operators import And, KeyValuePair, LegalUnitEnum
 
 
 async def test_starts_with():
@@ -25,8 +26,9 @@ async def test_request_builder_with_query():
 async def test_request_builder_with_and():
     instance = MultiCriteriaSearchEstablishment()
 
-    and1 = AND(key=LegalUnitEnum.NOM_UNITE_LEGALE, value='My Legal Unit')
-    and2 = AND(key=LegalUnitEnum.NOM_UNITE_LEGALE, value='Another Legal Unit')
+    condition = And(
+        KeyValuePair(key=LegalUnitEnum.NOM_UNITE_LEGALE, value='A'),
+        KeyValuePair(key=LegalUnitEnum.NOM_UNITE_LEGALE, value='B')
+    )
 
-    instance.conditional_and(and1, and2)
-    await query(instance)
+    await query(instance, condition=condition)

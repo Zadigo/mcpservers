@@ -23,7 +23,7 @@ class BaseOperator(ABC):
     CONDITION_OR: str = '{lhv} OR {rhv}'
     PERIOD: str = 'period{values}'
 
-    def __init__(self, lhv: str, rhv: str):
+    def __init__(self, lhv: KeyValuePair, rhv: KeyValuePair):
         self.lhv = lhv
         self.rhv = rhv
 
@@ -55,7 +55,10 @@ class And(BaseOperator):
     """
 
     def resolve(self):
-        return self.CONDITION_AND.format(lhv=self.lhv, rhv=self.rhv)
+        return self.CONDITION_AND.format(
+            lhv=self.lhv.resolve(), 
+            rhv=self.rhv.resolve()
+        )
 
 
 class Or(BaseOperator):
@@ -68,7 +71,10 @@ class Or(BaseOperator):
     """
 
     def resolve(self):
-        return self.CONDITION_OR.format(lhv=self.lhv, rhv=self.rhv)
+        return self.CONDITION_OR.format(
+            lhv=self.lhv.resolve(), 
+            rhv=self.rhv.resolve()
+        )
 
 
 class To(BaseOperator):

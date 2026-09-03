@@ -1,14 +1,18 @@
-from backend.models import AND, OR
+from backend.operators import And, KeyValuePair, Or
 from models.base import LegalUnitEnum
 
 
 def test_and():
-    model = AND(key=LegalUnitEnum.NOM_UNITE_LEGALE, value='My Legal Unit')
-    assert model.resolve() == 'nomUniteLegale:My Legal Unit'
-    assert model.operator_name == 'and'
+    model = And(
+        KeyValuePair(key=LegalUnitEnum.NOM_UNITE_LEGALE, value='A'),
+        KeyValuePair(key=LegalUnitEnum.NOM_UNITE_LEGALE, value='B')
+    )
+    assert model.resolve() == 'nomUniteLegale:A AND nomUniteLegale:B'
 
 
 def test_or():
-    model = OR(key=LegalUnitEnum.NOM_UNITE_LEGALE, value='My Legal Unit')
-    assert model.resolve() == 'nomUniteLegale:My Legal Unit'
-    assert model.operator_name == 'or'
+    model = Or(
+        KeyValuePair(key=LegalUnitEnum.NOM_UNITE_LEGALE, value='A'),
+        KeyValuePair(key=LegalUnitEnum.NOM_UNITE_LEGALE, value='B')
+    )
+    assert model.resolve() == 'nomUniteLegale:A OR nomUniteLegale:B'
