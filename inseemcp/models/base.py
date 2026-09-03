@@ -70,7 +70,8 @@ class LegalUnitModel(pydantic.BaseModel):
         description="Legal unit's legal name"
     )
 
-    sigleUniteLegale: str = Field(
+    sigleUniteLegale: str | None = Field(
+        default=None,
         description="Acronym of the legal unit"
     )
 
