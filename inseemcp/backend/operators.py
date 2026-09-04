@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 
 from pydantic import BaseModel, Field
 
@@ -12,23 +13,39 @@ class KeyValuePair(BaseModel):
     key:value
     """
     key: LegalUnitEnum = Field(default=LegalUnitEnum.NOM_UNITE_LEGALE)
-    value: str = Field(default=None)
+    value: str | None = Field(default=None)
 
     def resolve(self):
+        if self.value is None:
+            self.value = ''
         return f"{self.key.value}:{self.value}"
 
 
-class BaseOperator(ABC):
+class BaseCondition(ABC):
+    def __repr__(self):
+        return f'<{self.__class__.__name__}: {self.resolve()}>'
+    
+    @abstractmethod
+    def resolve(self) -> str | KeyValuePair:
+        return ''
+
+    @staticmethod
+    def join_values(values: Sequence[str]):
+        return ' '.join(values)
+
+    def check_valid_string(self):
+        if isinstance(self.lhv, KeyValuePair):
+            return True
+        return isinstance(self.lhv, str) and (not self.lhv.endswith('*') or self.lhv.startswith('-'))
+
+
+class BaseOperator(BaseCondition):
     CONDITION_AND: str =  '{lhv} AND {rhv}'
     CONDITION_OR: str = '{lhv} OR {rhv}'
-    PERIOD: str = 'period{values}'
 
     def __init__(self, lhv: KeyValuePair, rhv: KeyValuePair):
         self.lhv = lhv
         self.rhv = rhv
-
-    def __repr__(self):
-        return f'<{self.__class__.__name__}: {self.resolve()}>'
 
     @property
     def operator_name(self):
@@ -55,6 +72,12 @@ class And(BaseOperator):
     """
 
     def resolve(self):
+        if self.check_valid_string():
+            return self.CONDITION_AND.format(
+                lhv=self.lhv,
+                rhv=self.rhv
+            )
+
         return self.CONDITION_AND.format(
             lhv=self.lhv.resolve(), 
             rhv=self.rhv.resolve()
@@ -71,6 +94,12 @@ class Or(BaseOperator):
     """
 
     def resolve(self):
+        if self.check_valid_string():
+            return self.CONDITION_OR.format(
+                lhv=self.lhv,
+                rhv=self.rhv
+            )
+
         return self.CONDITION_OR.format(
             lhv=self.lhv.resolve(), 
             rhv=self.rhv.resolve()
@@ -94,10 +123,64 @@ class To(BaseOperator):
         return KeyValuePair(key=self.column.value, value=value)
 
 
-class Period(BaseOperator):
+class Period(BaseCondition):
+    PERIOD: str = 'periode({values})'
+
     def __init__(self, *values: And | Or):
         self.values = values
+    
+    def resolve(self):
+        str_values = self.join_values(value.resolve() for value in self.values)
+        return self.PERIOD.format(values=str_values)
+
+
+class Inversion(BaseOperator):
+    """Inverts a KeyValuePair by prepending a minus sign.
+
+    .. code-block:: python
+
+        # -nomUniteLegale:test
+        kv = KeyValuePair(key=LegalUnitEnum.NOM_UNITE_LEGALE, value='test')
+        inverted = Inversion(kv)
+    """
+    def __init__(self, lhv: KeyValuePair):
+        self.lhv = lhv
+        
+    def resolve(self):
+        return f'-{self.lhv.resolve()}'
+
+
+class WildCard(BaseOperator):
+    """
+    This is a wildcard condition for a KeyValuePair,
+    appending an asterisk `*` to its resolved value. It can be inverted
+    using the `~` operator.
+
+    To check that a value starts with::
+
+        # numUniteLegale:test*
+        WildCard(KeyValuePair(key=LegalUnitEnum.NOM_UNITE_LEGALE, value='test'))
+
+    To check that it contains a value:
+
+        # numUniteLegale:*
+        WildCard(KeyValuePair(key=LegalUnitEnum.NOM_UNITE_LEGALE, value=None))
+
+    To check that it does not contain a value::
+
+        # -numUniteLegale:*
+        ~WildCard(KeyValuePair(key=LegalUnitEnum.NOM_UNITE_LEGALE, value='test'))
+        
+    """
+    def __init__(self, lhv: KeyValuePair):
+        self.lhv = lhv
+        self._is_inverted = False
+
+    def __invert__(self):
+        self._is_inverted = True
+        return self.resolve()
 
     def resolve(self):
-        str_values = [value.resolve() for value in self.values]
-        return self.PERIOD.format(values=str_values)
+        if self._is_inverted:
+            return f'{Inversion(self.lhv).resolve()}*'
+        return self.lhv.resolve() + '*'

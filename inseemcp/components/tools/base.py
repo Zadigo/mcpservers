@@ -3,7 +3,6 @@ from pydantic import Field
 
 from backend import query
 from backend.base import SearchEstablishment, SearchLegalUnit, SingleSearchQuery
-from models.base import BaseResponseModel
 
 
 @tool
@@ -44,24 +43,6 @@ async def get_siren(siren: str, date: str | None = Field(default=None, descripti
             "url": instance.request._final_url
         }
     )
-
-
-@tool(tags={'search', 'siren', 'establishment'})
-async def search_all_establishments_with_siren(siren: str) -> BaseResponseModel:
-    """
-    Search for a single SIREN number.
-
-    Arguments:
-        siren (str): The SIREN number to search for.
-    """
-    # instance = SingleSearchEstablishment(MultiCriteriaSearchQuery(q=siren))
-    # response = await query(instance)
-    # return ToolResult(
-    #     structured_content=response, 
-    #     meta={
-    #         "search_type_fr": "établissements"
-    #     }
-    # )
 
 
 @tool
