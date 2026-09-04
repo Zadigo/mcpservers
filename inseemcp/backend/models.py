@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from backend.operators import KeyValuePair
+from backend.operators import BaseOperator, WildCard, KeyValuePair
 from backend.typings import TypeCondition
 
 
@@ -20,8 +20,8 @@ class MultiCriteriaSearchQuery:
     which prevents pydantic.BaseModel to fully initialize"""
     
     def __init__(self, q: str | KeyValuePair | TypeCondition = '', date: str | None = None, tri: str | None = None, nombre: int = 20):
-        if not isinstance(q, (str, KeyValuePair, TypeCondition)):
-            raise TypeError("q must be a string, KeyValuePair, or TypeCondition")
+        if not isinstance(q, (str, KeyValuePair, BaseOperator, WildCard)):
+            raise TypeError("q must be a string, KeyValuePair, BaseOperator, or WildCard")
 
         self.q = q
         self.date = date

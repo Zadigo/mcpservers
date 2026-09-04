@@ -144,14 +144,14 @@ class WildCard(BaseCondition):
         
     """
 
-    template: str = '{lhv}*'
+    template: str = '{value}*'
 
-    def __init__(self, lhv: KeyValuePair):
-        self.lhv = lhv
+    def __init__(self, value: KeyValuePair):
+        self.value = value
 
     def __invert__(self):
-        inversion = Inversion(self.lhv).resolve()
-        return self.template.format(lhv=inversion)
+        inversion = Inversion(self.value).resolve()
+        return self.template.format(value=inversion)
 
     def resolve(self):
-        return self.template.format(lhv=self.lhv.resolve())
+        return self.template.format(value=self.value.resolve())

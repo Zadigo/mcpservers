@@ -9,7 +9,13 @@ from backend import (
 )
 from backend.base import MultiCriteriaSearchLegalUnit, SearchLegalUnit
 from backend.models import MultiCriteriaSearchQuery, SingleSearchQuery
-from backend.operators import And, KeyValuePair, LegalUnitEnum
+from backend.operators import (
+    And,
+    EstablishmentEnum,
+    KeyValuePair,
+    LegalUnitEnum,
+    WildCard,
+)
 from backend.requests import (
     MultiCriteriaEstablishmentSearchRequest,
     MultiCriteriaLegalUnitSearchRequest,
@@ -90,6 +96,20 @@ class TestMultiCriteriaSearchEstablishment:
         await query(instance, testing=True)
 
         assert instance.request._final_url == 'https://api.insee.fr/api-sirene/3.11/siren?q=nomUniteLegale%3AA+AND+nomUniteLegale%3AB&nombre=20'
+
+    async def test_request_builder_with_keyvaluepair(self):
+        siren = '1234'
+        kv = KeyValuePair(key=EstablishmentEnum.SIREN, value=siren)
+        instance = MultiCriteriaSearchLegalUnit(query=MultiCriteriaSearchQuery(q=kv))
+        response = await query(instance, testing=True)
+        assert response is not None
+
+    async def test_request_builder_with_condition(self):
+        siren = '1234'
+        kv = KeyValuePair(key=EstablishmentEnum.SIREN, value=siren)
+        instance = MultiCriteriaSearchLegalUnit(query=MultiCriteriaSearchQuery(q=WildCard(kv)))
+        response = await query(instance, testing=True)
+        assert response is not None
 
 
 class TestAbstractRequester:

@@ -9,7 +9,7 @@ from backend.base import (
     SearchLegalUnit,
     SingleSearchQuery,
 )
-from backend.operators import KeyValuePair
+from backend.operators import KeyValuePair, WildCard
 from models.base import EstablishmentEnum
 
 
@@ -61,17 +61,23 @@ async def get_siren_startswith(siren: str):
     Arguments:
         siren (str): The starting string of the SIREN numbers to search for.
     """
-    kv = KeyValuePair(key=EstablishmentEnum.SIREN, value=siren)
-    instance = MultiCriteriaSearchLegalUnit(query=MultiCriteriaSearchQuery(q=kv))
-    response = await query(instance)
-    
-    return ToolResult(
-        structured_content=response, 
-        meta={
-            "search_type_fr": "unités légales",
-            "url": instance.request._final_url
-        }
-    )
+    try:
+        kv = KeyValuePair(key=EstablishmentEnum.SIREN, value=siren)
+        instance = MultiCriteriaSearchLegalUnit(query=MultiCriteriaSearchQuery(q=WildCard(kv)))
+        response = await query(instance)
+    except Exception as e:
+        return ToolResult(
+            content=f"An error occured: {e}",
+            is_error=True,
+        )
+    else:
+        return ToolResult(
+            structured_content=response, 
+            meta={
+                "search_type_fr": "unités légales",
+                "url": instance.request._final_url
+            }
+        )
 
 
 @tool
