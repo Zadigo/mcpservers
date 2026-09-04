@@ -1,17 +1,15 @@
-from fastmcp.tools import ToolResult, tool
+from fastmcp.tools import tool
 
 from backend.simple_requester import (
     MultiCriteriaSearchModel,
     Requester,
     SearchModel,
-    condition_and,
-    condition_or,
-    condition_period,
-    select_response,
+    inversion,
+    join_operator,
     wild_card,
 )
-from models.base import BaseResponseModel, LegalUnitEnum
-from utils import logger
+from components.utils import select_response
+from models.base import EstablishmentEnum, LegalUnitEnum
 
 
 @tool
@@ -23,52 +21,9 @@ async def get_siret(siret: str, date: str | None = None):
         siret (str): The SIRET number to search for.
         date (str | None): The date of the SIRET number to search for.
     """
-    instance = Requester(siret=siret)
-    query = SearchModel(date=date)
-
-    await instance(query)
+    instance = Requester(single_search=True, param='siret')
+    await instance(SearchModel(), url_param=siret)
     return select_response(instance)
-
-
-@tool
-async def search_legal_units_by_activity_codes(
-    activity_codes: list[str] = (),
-    inclusive: bool = True
-) -> BaseResponseModel:
-    """
-    Search for legal units with a specific activity code.
-
-    Arguments:
-        activity_codes (list[str]): The activity codes of the legal units to search for.
-        inclusive (bool): Whether to include legal units with any of the activity codes (True) or all of them (False).
-    """
-    instance = Requester()
-
-    if len(activity_codes) == 0:
-        return ToolResult(content="No activity codes provided.", is_error=True)
-
-    str_query: str = ""
-    if len(activity_codes) == 1:
-        str_query = activity_codes[0]
-    else:
-        and_conditions = condition_and(LegalUnitEnum.ACTIVITE_PRINCIPALE_UNITE_LEGALE, *activity_codes)
-        or_conditions = condition_or(LegalUnitEnum.ACTIVITE_PRINCIPALE_UNITE_LEGALE, *activity_codes)
-        str_query: str = and_conditions if inclusive else or_conditions
-
-    query = MultiCriteriaSearchModel(q=condition_period(str_query))
-    response = await instance(query)
-
-    if instance.has_error:
-        logger.error(f"Error occurred while searching for legal units by activity codes: {instance.error.content}")
-        return ToolResult(content=instance.error.content, is_error=True)
-
-    return ToolResult(
-        structured_content=response, 
-        meta={
-            "search_type_fr": "unités légales",
-            "url": instance._final_url
-        }
-    )
 
 
 @tool
@@ -79,27 +34,43 @@ async def get_siren_startswith(siren: str):
     Arguments:
         siren (str): The starting string of the SIREN numbers to search for.
     """
-    instance = Requester()
+    instance = Requester(single_search=False, param='siren')
 
-    str_query = wild_card(LegalUnitEnum.SIREN, siren)
+    str_query = wild_card(EstablishmentEnum.SIREN, siren)
     query = MultiCriteriaSearchModel(q=str_query)
+
+    await instance(query, url_param=siren)
+    return select_response(instance)
+
+
+@tool
+async def get_legal_unit_name_startswith(name: str):
+    """
+    Search for all legal units where a specific column's value starts with a specific string.
+
+    Arguments:
+        name (str): The starting string of the legal unit names to search for.
+    """
+    instance = Requester(single_search=False, param='siren')
+
+    query1 = wild_card(LegalUnitEnum.NOM_UNITE_LEGALE, name)
+    query2 = wild_card(LegalUnitEnum.NOM_USAGE_UNITE_LEGALE, name)
+        
+    query = MultiCriteriaSearchModel(q=join_operator('OR', query1, query2))
 
     await instance(query)
     return select_response(instance)
 
 
-# @tool
-# async def legal_units_name_starts_with(name: str):
-#     """
-#     Search for all legal units with names that start with a specific string.
+@tool
+async def legal_units_column_has_no_value(column: str):
+    """
+    Search for legal units where a specific column has no value.
 
-#     Arguments:
-#         name (str): The starting string of the legal unit names to search for.
-#     """
-#     instance = Requester()
-
-#     str_query = wild_card(LegalUnitEnum.DENOMINATION_UNITE_LEGALE, name)
-#     query = MultiCriteriaSearchModel(q=str_query)
-
-#     await instance(query)
-#     return select_response(instance)
+    Arguments:
+        column (str): The column to check for no value.
+    """
+    instance = Requester(single_search=False)
+    str_query = inversion(wild_card(LegalUnitEnum.__getattr__(column)))
+    await instance(MultiCriteriaSearchModel(q=str_query))
+    return select_response(instance)

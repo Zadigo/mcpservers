@@ -63,6 +63,9 @@ class Requester:
         self.error: ResponseError | None = None
         self._cached_response: dict | None = None
 
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__}: [{self._final_url}]>'
+
     @property
     def has_error(self):
         return self.error is not None
@@ -116,7 +119,7 @@ def inversion(value: str) -> str:
     return f'-{value}'
 
 
-def wild_card(key: LegalUnitEnum | EstablishmentEnum, value: str) -> str:
+def wild_card(key: LegalUnitEnum | EstablishmentEnum, value: str | None = None) -> str:
     result = key_value_pair(key.value, value)
     return f'{result}*'
 
@@ -127,14 +130,29 @@ def key_value_pair(key: str, value: str | None = None) -> str:
     return f'{key}:{value}'
 
 
+def join_operator(operator: Literal['AND', 'OR'], *values: str) -> str:
+    return f' {operator} '.join(values)
+
+
 def condition_and(column: LegalUnitEnum | EstablishmentEnum, *values: str) -> str:
     key_value_pairs = [key_value_pair(column.value, value) for value in values]
-    return ' AND '.join(key_value_pairs)
+    return join_operator('AND', *key_value_pairs)
 
 
 def condition_or(column: LegalUnitEnum | EstablishmentEnum, *values: str) -> str:
     key_value_pairs = [key_value_pair(column.value, value) for value in values]
-    return ' OR '.join(key_value_pairs)
+    return join_operator('OR', *key_value_pairs)
+
+
+def condition_or_dict(conditons: dict[LegalUnitEnum | EstablishmentEnum, str]) -> str:
+    values = []
+    for key, value in conditons.items():
+        if isinstance(key, str):
+            values.append(key_value_pair(key, value))
+        else:
+            values.append(key_value_pair(key.value, value))
+
+    return ' OR '.join(values)
 
 
 def condition_to(lhv: str, rhv: str) -> str:
@@ -143,4 +161,6 @@ def condition_to(lhv: str, rhv: str) -> str:
 
 def condition_period(value: str) -> str:
     return f'periode({value})'
+
+
 

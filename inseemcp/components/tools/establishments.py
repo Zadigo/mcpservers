@@ -1,13 +1,15 @@
 from fastmcp.tools import tool
-from pydantic import Field
 
 from backend.simple_requester import (
     MultiCriteriaSearchModel,
     Requester,
-    select_response,
+    SearchModel,
+    inversion,
+    join_operator,
     wild_card,
 )
-from models.base import EstablishmentEnum
+from components.utils import select_response
+from models.base import BusinessColumnEnum
 
 
 @tool
@@ -19,79 +21,39 @@ async def get_siren(siren: str, date: str | None = None):
         siren (str): The SIREN number to search for.
         date (str | None): The date of the SIREN number to search for.
     """
-    instance = Requester()
+    instance = Requester(single_search=True)
+    await instance(SearchModel(), url_param=siren)
+    return select_response(instance)
 
-    str_query = wild_card(EstablishmentEnum.SIREN, siren)
-    query = MultiCriteriaSearchModel(q=str_query, date=date)
+
+@tool
+async def establishments_siren_not_start_by(siren: list[str]):
+    """
+    Search for establishments where the SIREN number does not start with the specified strings.
+
+    Arguments:
+        siren (list[str]): The list of starting strings of the SIREN numbers to exclude.
+    """
+    instance = Requester(single_search=False, param='siren')
+
+    queries = [inversion(wild_card(BusinessColumnEnum.SIREN, s)) for s in siren]
+    query = MultiCriteriaSearchModel(q=join_operator('AND', *queries))
 
     await instance(query)
     return select_response(instance)
 
 
-@tool
-async def search_all_purged_legal_units():
-    """
-    Search for all purged legal units.
-    """
-
 
 @tool
-async def search_all_purged_establishments():
+async def search_establishments_name_startswith(name: str):
     """
-    Search for all purged establishments.
-    """
-
-
-@tool
-async def search_all_establishments_within_commune(commune_code: str):
-    """
-    Search for all establishments within a specific "commune". A "commune" is the smallest administrative 
-    division in France, similar to a municipality or township.
-
-    Arguments:
-        commune_code (str): The code of the commune to search for establishments.
-    """
-
-
-@tool
-async def search_for_establishments_by_name(name: str):
-    """
-    Search for establishments with a specific name.
+    Search for establishments that start with a specific name.
 
     Arguments:
         name (str): The name of the establishments to search for.
     """
+    instance = Requester(single_search=False, param='siret')
+    query = MultiCriteriaSearchModel(q=wild_card(BusinessColumnEnum.DENOMINATION_UNITE_LEGALE, name))
 
-
-
-
-@tool
-async def search_for_terminated_legal_units():
-    """
-    Search for all terminated legal units.
-    """
-
-
-@tool
-async def search_for_establishments_where_legal_unit_is_person():
-    """
-    Search for all establishments where the legal unit is a person.
-    """
-
-
-@tool
-async def search_for_establishments_never_closed():
-    """
-    Search for all establishments that have never been c    losed.
-    """
-
-
-COLUMNS = Field(default=None, description="The columns to search in.")
-
-@tool
-async def multisearch(
-    columns: list[str] | None = COLUMNS,
-):
-    """
-    Perform an arbitrary search on the dataset
-    """
+    await instance(query)
+    return select_response(instance)
