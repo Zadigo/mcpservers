@@ -6,7 +6,7 @@ import httpx2
 import pydantic
 from pydantic import Field
 
-from models.base import EstablishmentEnum, LegalUnitEnum
+from models.base import BusinessColumnEnum
 
 AUTHORIZATION_HEADER: str = 'X-INSEE-Api-Key-Integration'
 
@@ -30,7 +30,7 @@ class MultiCriteriaSearchModel(QueryModel):
         default=None,
         description="Sorting criteria for the multi-criteria search"
     )
-    nombre: str | None = Field(
+    nombre: int = Field(
         default=20,
         le=20,
         ge=1,
@@ -119,14 +119,18 @@ def inversion(value: str) -> str:
     return f'-{value}'
 
 
-def wild_card(key: LegalUnitEnum | EstablishmentEnum, value: str | None = None) -> str:
+def wild_card(key: BusinessColumnEnum, value: str | None = None) -> str:
     result = key_value_pair(key.value, value)
     return f'{result}*'
 
 
-def key_value_pair(key: str, value: str | None = None) -> str:
+def key_value_pair(key: str | BusinessColumnEnum, value: str | None = None) -> str:
     if value is None:
         value = ''
+
+    if isinstance(key, BusinessColumnEnum):
+        key = key.value
+
     return f'{key}:{value}'
 
 
@@ -134,17 +138,17 @@ def join_operator(operator: Literal['AND', 'OR'], *values: str) -> str:
     return f' {operator} '.join(values)
 
 
-def condition_and(column: LegalUnitEnum | EstablishmentEnum, *values: str) -> str:
-    key_value_pairs = [key_value_pair(column.value, value) for value in values]
+def condition_and(column: BusinessColumnEnum, *values: str) -> str:
+    key_value_pairs = [key_value_pair(column, value) for value in values]
     return join_operator('AND', *key_value_pairs)
 
 
-def condition_or(column: LegalUnitEnum | EstablishmentEnum, *values: str) -> str:
-    key_value_pairs = [key_value_pair(column.value, value) for value in values]
+def condition_or(column: BusinessColumnEnum, *values: str) -> str:
+    key_value_pairs = [key_value_pair(column, value) for value in values]
     return join_operator('OR', *key_value_pairs)
 
 
-def condition_or_dict(conditons: dict[LegalUnitEnum | EstablishmentEnum, str]) -> str:
+def condition_or_dict(conditons: dict[BusinessColumnEnum, str]) -> str:
     values = []
     for key, value in conditons.items():
         if isinstance(key, str):

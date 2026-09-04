@@ -1,4 +1,3 @@
-import itertools
 from contextlib import asynccontextmanager
 
 from fastmcp import FastMCP
@@ -11,7 +10,7 @@ from mcp_types import (
     ResourceTemplateReference,
 )
 
-from models.base import EstablishmentEnum, LegalUnitEnum
+from models.base import BusinessColumnEnum
 from utils import BASE_DIR, logger
 
 INSTRUCTIONS: str = """
@@ -60,12 +59,12 @@ if BASE_DIR.joinpath('components', 'resources', 'data').is_dir():
 
 @mcp.completion
 async def complet(ref: PromptReference | ResourceTemplateReference, argument: PromptArgument, context: CompletionContext):
+    column_names = list(BusinessColumnEnum.__members__)
+    
     if isinstance(ref, PromptReference):
-        if ref.name == 'explain_column' and argument.name == 'column_name':
-            column_names = itertools.chain(
-                {item for item in LegalUnitEnum.__members__},
-                {item for item in EstablishmentEnum.__members__}
-            )
+        tool_names = ['explain_column', 'legal_units_exact_search', 'legal_units_column_has_no_value']
+
+        if ref.name in tool_names and argument.name == 'column_name':
             return sorted(column_names)
 
         if argument.name == 'test':
