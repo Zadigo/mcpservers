@@ -61,7 +61,7 @@ async def get_siren_startswith(siren: str):
     Arguments:
         siren (str): The starting string of the SIREN numbers to search for.
     """
-    kv = KeyValuePair(EstablishmentEnum.SIREN, value=siren)
+    kv = KeyValuePair(key=EstablishmentEnum.SIREN, value=siren)
     instance = MultiCriteriaSearchLegalUnit(query=MultiCriteriaSearchQuery(q=kv))
     response = await query(instance)
     

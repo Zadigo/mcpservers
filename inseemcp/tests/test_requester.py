@@ -86,8 +86,10 @@ class TestMultiCriteriaSearchEstablishment:
         )
 
         q = MultiCriteriaSearchQuery(q=condition)
-        instance = MultiCriteriaSearchEstablishment(query=q)
+        instance = MultiCriteriaSearchLegalUnit(query=q)
         await query(instance, testing=True)
+
+        assert instance.request._final_url == 'https://api.insee.fr/api-sirene/3.11/siren?q=nomUniteLegale%3AA+AND+nomUniteLegale%3AB&nombre=20'
 
 
 class TestAbstractRequester:

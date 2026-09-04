@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 
 from backend.operators import KeyValuePair
+from backend.typings import TypeCondition
 
 
 class SingleSearchQuery(BaseModel):
@@ -13,21 +14,34 @@ class SingleSearchQuery(BaseModel):
         description='Period of the SIREN or SIRET number to search for.'
     )
 
+class MultiCriteriaSearchQuery:
+    """A class model for multi-criteria search queries. This class is preferred
+    instead of a pydantic.BaseModel in order to pass TypeCondition and KeyValuePair
+    which prevents pydantic.BaseModel to fully initialize"""
+    
+    def __init__(self, q: str | KeyValuePair | TypeCondition = '', date: str | None = None, tri: str | None = None, nombre: int = 20):
+        if not isinstance(q, (str, KeyValuePair, TypeCondition)):
+            raise TypeError("q must be a string, KeyValuePair, or TypeCondition")
 
-class MultiCriteriaSearchQuery(BaseModel):
-    q: str | KeyValuePair = Field(
-        default='',
-        description='Query string for multi-criteria search',
-    )
-    date: str | None = Field(
-        default=None
-    )
-    tri: str | None = Field(
-        default=None,
-        description='Sorting criteria for the search results',
-    )
-    nombre: int = Field(
-        default=20, 
-        ge=0, 
-        le=20
-    )
+        self.q = q
+        self.date = date
+        self.tri = tri
+        self.nombre = nombre
+
+    def model_dump(self, *, exclude_none: bool = False, **kwargs):
+        old_result: dict = {
+            'q': self.q,
+            'date': self.date,
+            'tri': self.tri,
+            'nombre': self.nombre
+        }
+        new_result = {}
+
+        if exclude_none:
+            for k, v in old_result.items():
+                if v is not None:
+                    new_result[k] = v
+        else:
+            new_result: dict = old_result
+
+        return new_result

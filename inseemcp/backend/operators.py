@@ -25,7 +25,7 @@ class BaseCondition(ABC):
     template: str = ''
 
     def __repr__(self):
-        return f'<{self.__class__.__name__}: {self.resolve()}>'
+        return f'<{self.__class__.__name__}>'
     
     @abstractmethod
     def resolve(self) -> str:
@@ -48,6 +48,9 @@ class BaseOperator:
     def __init__(self, lhv: KeyValuePair, rhv: KeyValuePair):
         self.lhv = lhv
         self.rhv = rhv
+
+    def __repr__(self):
+        return f'<{self.__class__.__name__}: {self.lhv}: {self.rhv}>'
 
     def resolve(self):
         if isinstance(self.lhv, str) and isinstance(self.rhv, str):
