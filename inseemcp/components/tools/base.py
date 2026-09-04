@@ -117,8 +117,8 @@ async def search_for_establishments_by_name(name: str):
 
 @tool
 async def search_legal_units_by_activity_codes(
-    activity_codes: list[str] = Field(default_factory=list, description="The activity codes of the legal units to search for."),
-    inclusive: bool = Field(default=True, description="Whether to include legal units with any of the activity codes (True) or all of them (False)."),
+    activity_codes: list[str] = (),
+    inclusive: bool = True
 ) -> BaseResponseModel:
     """
     Search for legal units with a specific activity code.
@@ -144,6 +144,7 @@ async def search_legal_units_by_activity_codes(
     response = await instance(query)
 
     if instance.has_error:
+        logger.error(f"Error occurred while searching for legal units by activity codes: {instance.error.content}")
         return ToolResult(content=instance.error.content, is_error=True)
 
     return ToolResult(
