@@ -6,7 +6,6 @@ from components.tools.establishments import (
 from components.tools.legal_units import (
     get_legal_unit_name_startswith,
     get_siren_startswith,
-    legal_units_column_has_no_value,
     legal_units_exact_search,
 )
 
@@ -28,11 +27,11 @@ class TestSearchLegalUnitsByActivityCodes:
 
 class TestGetSirenStartsWith:
     async def test_no_values(self):
-        result = await get_siren_startswith(name="")
+        result = await get_siren_startswith(siren="")
         assert result is not None
 
     async def test_with_values(self):
-        result = await get_siren_startswith(name="OpenAI")
+        result = await get_siren_startswith(siren="OpenAI")
         assert result is not None
 
 
@@ -40,11 +39,6 @@ class TestGetLegalUnitNameStartsWith:
     async def test_get_legal_unit_name_startswith(self):
         result = await get_legal_unit_name_startswith(name="OpenAI")
         assert result is not None
-
-    async def test_legal_units_column_has_no_value(self):
-        result = await legal_units_column_has_no_value(siren="123456789", column="NOM_UNITE_LEGALE")
-        assert result is not None
-
 
 
 class TestEstablishmentsSirenNotStartBy:
@@ -71,9 +65,9 @@ class TestSearchEstablishmentsNameStartsWith:
 
 class TestLegalUnitsExactSearch:
     async def test_no_values(self):
-        result = await legal_units_exact_search(column="", value="")
+        result = await legal_units_exact_search(column_name="", value="")
         assert result is not None
 
     async def test_with_values(self):
-        result = await legal_units_exact_search(column="NOM_UNITE_LEGALE", value="OpenAI")
+        result = await legal_units_exact_search(column_name ="NOM_UNITE_LEGALE", value="OpenAI")
         assert result is not None
