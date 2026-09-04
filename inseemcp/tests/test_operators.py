@@ -1,5 +1,7 @@
 import pytest
 
+from backend import query
+from backend.base import MultiCriteriaSearchLegalUnit, MultiCriteriaSearchQuery
 from backend.operators import (
     And,
     KeyValuePair,
@@ -8,6 +10,7 @@ from backend.operators import (
     Period,
     WildCard,
 )
+from models.base import EstablishmentEnum
 
 
 def test_and():
@@ -30,6 +33,16 @@ def test_or():
 def test_key_value_pair():
     kv = KeyValuePair(key=LegalUnitEnum.NOM_UNITE_LEGALE, value=None)
     assert kv.resolve() == 'nomUniteLegale:'
+
+
+async def test_key_value_pair_in_multi_criteria_search():
+    kv = KeyValuePair(key=EstablishmentEnum.SIREN, value='1234')
+    instance = MultiCriteriaSearchLegalUnit(MultiCriteriaSearchQuery(q=kv))
+    response = await query(instance, testing=True)
+
+    assert response is not None
+    assert isinstance(response, dict)
+    assert response['url'] == 'https://api.insee.fr/api-sirene/3.11/siren?q=siren%3A1234&nombre=20'
 
 
 @pytest.mark.parametrize(

@@ -9,7 +9,7 @@ from backend.base import (
     SearchLegalUnit,
     SingleSearchQuery,
 )
-from backend.operators import KeyValuePair, WildCard
+from backend.operators import KeyValuePair
 from models.base import EstablishmentEnum
 
 
@@ -62,7 +62,7 @@ async def get_siren_startswith(siren: str):
         siren (str): The starting string of the SIREN numbers to search for.
     """
     kv = KeyValuePair(EstablishmentEnum.SIREN, value=siren)
-    instance = MultiCriteriaSearchLegalUnit(MultiCriteriaSearchQuery(q=siren), condition=WildCard(kv))
+    instance = MultiCriteriaSearchLegalUnit(query=MultiCriteriaSearchQuery(q=kv))
     response = await query(instance)
     
     return ToolResult(

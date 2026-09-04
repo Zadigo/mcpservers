@@ -17,7 +17,7 @@ class BaseRequest(ABC):
 
     def __init__(self):
         self._query_model: SingleSearchQuery | MultiCriteriaSearchQuery | None = None
-        self.q_condition: TypeCondition | None = None
+        # self.q_condition: TypeCondition | None = None
         self.api_key: str = os.environ.get('INSEE_API_KEY')
         self.url_extra_params: dict = {}
         self._final_url: str | None = None
@@ -30,13 +30,14 @@ class BaseRequest(ABC):
         """Returns the formatted base url built dynamically 
         using the version, param, and any extra url parameters"""
         url = self.base_url.format(version=self.version, param=self.param, **self.url_extra_params)
-        query = self._query_model.model_dump(exclude=['siren_ou_siret'], exclude_none=True)
 
         if self._query_model is None:
             raise TypeError('The model used to set the query is not set')
 
-        if self.q_condition is not None:
-            self._query_model.q = self.q_condition.resolve()
+        if isinstance(self._query_model, MultiCriteriaSearchQuery) and not isinstance(self._query_model.q, str):
+            self._query_model.q = self._query_model.q.resolve()
+
+        query = self._query_model.model_dump(exclude=['siren_ou_siret'], exclude_none=True)
 
         self._final_url = url
         

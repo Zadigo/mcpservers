@@ -8,7 +8,7 @@ from backend.requests import (
     SearchEstablishmentRequest,
     SearchLegalUnitRequest,
 )
-from backend.typings import TypeBaseRequest, TypeCondition
+from backend.typings import TypeBaseRequest
 
 
 class AbstractRequester(ABC):
@@ -23,9 +23,8 @@ class AbstractRequester(ABC):
 
     is_multi_criteria: Final[bool] = False
 
-    def __init__(self, query: SingleSearchQuery | MultiCriteriaSearchQuery = None, condition: TypeCondition | None = None):
+    def __init__(self, query: SingleSearchQuery | MultiCriteriaSearchQuery = None):
         self.query = query
-        self.condition = condition
         self.request: TypeBaseRequest | None = None
 
         if query is None:
@@ -50,33 +49,18 @@ class AbstractRequester(ABC):
 
     def update_request_query(self):
         if self.request is None:
-            raise ValueError('Cannot updatea request that is None')
+            raise ValueError('Cannot update a request that is None')
         
         model = getattr(self.request, '_query_model', None)
         if model is None:
             self.request._query_model = self.query
 
-        # Add the siren_ou_siret to the url parameters
-        if self.query.siren_ou_siret == '':
-            raise ValueError('Trying to call a SearchLegalUnitRequest without a parameter will create a malformed url')
+        if not self.is_multi_criteria:
+            if self.query.siren_ou_siret == '':
+                raise ValueError('Trying to call a SearchLegalUnitRequest without a parameter will create a malformed url')
         
-        self.request.url_extra_params[self.request.param] = self.query.siren_ou_siret        
+            self.request.url_extra_params[self.request.param] = self.query.siren_ou_siret        
 
-        # if self.is_multi_criteria:
-        #     data = self.query.model_dump()
-        # else:
-        #     # These go the url query parameters
-        #     # _data = self.query.model_dump(exclude=['siren_ou_siret'])
-
-        #     # Add the siren_ou_siret to the url parameters
-        #     if self.query.siren_ou_siret == '':
-        #         raise ValueError('Trying to call a SearchLegalUnitRequest without a parameter will create a malformed url')
-            
-        #     self.request.url_extra_params[self.request.param] = self.query.siren_ou_siret        
-        #     # data = {self.request.param: self.query.siren_ou_siret} | _data
-
-        # self.request._query_model = self.request._query_model.model_copy(update=data)
-                
 
 class SearchLegalUnit(AbstractRequester):
     """Entrypoint for building a request that will return 

@@ -85,7 +85,8 @@ class TestMultiCriteriaSearchEstablishment:
             KeyValuePair(key=LegalUnitEnum.NOM_UNITE_LEGALE, value='B')
         )
 
-        instance = MultiCriteriaSearchEstablishment(condition=condition)
+        q = MultiCriteriaSearchQuery(q=condition)
+        instance = MultiCriteriaSearchEstablishment(query=q)
         await query(instance, testing=True)
 
 

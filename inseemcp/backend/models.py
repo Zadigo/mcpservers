@@ -1,5 +1,6 @@
-
 from pydantic import BaseModel, Field
+
+from backend.operators import KeyValuePair
 
 
 class SingleSearchQuery(BaseModel):
@@ -14,7 +15,7 @@ class SingleSearchQuery(BaseModel):
 
 
 class MultiCriteriaSearchQuery(BaseModel):
-    q: str = Field(
+    q: str | KeyValuePair = Field(
         default='',
         description='Query string for multi-criteria search',
     )
