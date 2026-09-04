@@ -1,155 +1,111 @@
-import os
 from abc import ABC, abstractmethod
-from typing import Any, Literal
-from urllib.parse import urlencode
-
-import httpx2
+from typing import Final
 
 from backend.models import MultiCriteriaSearchQuery, SingleSearchQuery
-from backend.operators import And, Or, Period, To
-
-type TypeCondition = And | To | Period
+from backend.requests import (
+    MultiCriteriaEstablishmentSearchRequest,
+    MultiCriteriaLegalUnitSearchRequest,
+    SearchEstablishmentRequest,
+    SearchLegalUnitRequest,
+)
+from backend.typings import TypeBaseRequest, TypeCondition
 
 
 class AbstractRequester(ABC):
-    def __init__(self, query: SingleSearchQuery | MultiCriteriaSearchQuery = None):
+    """Base factory class used to build a request to the Api.
+    
+    Aargs:
+        query: SingleSearchQuery | MultiCriteriaSearchQuery = None
+            The query model that will be used to build the request
+        condition: TypeCondition | None = None
+            The condition that will be used to build the request
+    """
+
+    is_multi_criteria: Final[bool] = False
+
+    def __init__(self, query: SingleSearchQuery | MultiCriteriaSearchQuery = None, condition: TypeCondition | None = None):
         self.query = query
-        self.request: BaseRequest | None = None
+        self.condition = condition
+        self.request: TypeBaseRequest | None = None
+
+        if query is None:
+            if self.is_multi_criteria:
+                self.query = MultiCriteriaSearchQuery()
+            else:
+                self.query = SingleSearchQuery(siren_ou_siret='')
+        else:
+            if self.is_multi_criteria and not isinstance(self.query, MultiCriteriaSearchQuery):
+                raise TypeError("Expected a MultiCriteriaSearchQuery for a multi-criteria requester")
 
     @abstractmethod
-    def request_builder(self, using: BaseRequest | None = None, condition: TypeCondition | None = None) -> BaseRequest:
-        """Builds the BaseRequest class that will responsible for sending request"""
+    def request_builder(self, using: TypeBaseRequest | None = None) -> TypeBaseRequest:
+        """Builds the BaseRequest class that will responsible for sending request
+
+        Args:
+            using: TypeBaseRequest | None = None
+                The BaseRequest class that will be used to send the request. If None, the default BaseRequest class will be used
+        """
+        self.request = using
+        self.update_request_query()
 
     def update_request_query(self):
         model = getattr(self.request, '_query_model', None)
         if model is None:
             self.request._query_model = self.query
-        else:
-            if self.query is not None:
-                data = self.query.model_dump()
-                for key, value in data.items():
-                    self.request._query_model[key] = value
-    
 
-class SingleSearchLegalUnit(AbstractRequester):
-    def __init__(self, query: SingleSearchQuery = None):
-        if query is None:
-            query = SingleSearchQuery()
+        if self.is_multi_criteria:
+            data = self.query.model_dump()
         else:
-            if not isinstance(query, SingleSearchQuery):
-                raise ValueError('Query should be an instance of SingleSearchQuery')
+            # These go the url query parameters
+            _data = self.query.model_dump(exclude=['siren_ou_siret'])
+
+            # Add the siren_ou_siret to the url parameters
+            if self.query.siren_ou_siret == '':
+                raise ValueError('Trying to call a SearchLegalUnitRequest without a parameter will create a malformed url')
             
-        super().__init__(query)
+            self.request.url_extra_params[self.request.param] = self.query.siren_ou_siret        
+            data = {self.request.param: self.query.siren_ou_siret} | _data
 
-    def request_builder(self, condition: TypeCondition | None = None):
-        self.request = SingleSearchLegalUnitRequest()
-        self.update_request_query()
+        self.request._query_model = self.request._query_model.model_copy(update=data)
+                
+
+class SearchLegalUnit(AbstractRequester):
+    """Entrypoint for building a request that will return 
+    information about a legal unit by using the SIREN number"""
+    
+    def request_builder(self):
+        super().request_builder(using=SearchLegalUnitRequest())
         return self.request
 
 
-class SingleSearchEstablishment(AbstractRequester):
-    def request_builder(self, condition: TypeCondition | None = None):
-        self.request = SingleSearchEstablishmentRequest()
-        self.update_request_query()
+class SearchEstablishment(AbstractRequester):
+    """Entrypoint for building a request that will return
+    information about an establishment by using the SIRET number"""
+
+    def request_builder(self):
+        super().request_builder(using=SearchEstablishmentRequest())
         return self.request
 
 
-class MultiCriteriaSearchMixin(AbstractRequester):
-    def __init__(self, query: MultiCriteriaSearchQuery = None):
-        if query is None:
-            query = MultiCriteriaSearchQuery()
-        else:
-            if not isinstance(query, MultiCriteriaSearchQuery):
-                raise ValueError('Query should be an instance of MultiCriteriaSearchQuery')
+class MultiCriteriaSearchLegalUnit(AbstractRequester):
+    """Entrypoint for building a request that will return
+    information about a legal unit by using multiple criteria"""
 
-        super().__init__(query)
+    is_multi_criteria: Final[bool] = True
 
-
-class MultiCriteriaSearchLegalUnit(MultiCriteriaSearchMixin):
-    def request_builder(self, condition: TypeCondition | None = None):
-        self.request = MultiCriteriaLegalUnitSearchRequest()
-        self.request.q_condition = condition
-        self.update_request_query()
+    def request_builder(self):
+        super().request_builder(using=MultiCriteriaLegalUnitSearchRequest())
         return self.request
 
 
-class MultiCriteriaSearchEstablishment(MultiCriteriaSearchMixin):
-    """Entrypoint for a sending a multi-criteria search to the Api"""
+class MultiCriteriaSearchEstablishment(AbstractRequester):
+    """Entrypoint for building a request that will return
+    information about an establishment by using multiple criteria"""
 
-    def request_builder(self, condition: TypeCondition | None = None):
-        self.request = MultiCriteriaEstablishmentSearchRequest()
-        self.request.q_condition = condition
-        self.update_request_query()
+    is_multi_criteria: Final[bool] = True
+
+    def request_builder(self):
+        super().request_builder(using=MultiCriteriaEstablishmentSearchRequest())
         return self.request
 
 
-class BaseRequest(ABC):
-    version: float = 3.11
-    param: Literal['siret', 'siren'] = 'siret'
-    base_url: str = 'https://api.insee.fr/api-sirene/{version}/{param}'
-    authoriazation_header:str = 'X-INSEE-Api-Key-Integration'
-
-    def __init__(self):
-        self._query_model: SingleSearchQuery | MultiCriteriaSearchQuery | None = None
-        self.q_condition: And | Or | Period = None
-        self.api_key: str = os.environ.get('INSEE_API_KEY')
-
-    def __repr__(self):
-        return f'<{self.__class__.__name__}: {self.param}>'
-
-    @abstractmethod
-    def get_url(self):
-        """Returns the formatted base url used for the Api request"""
-        return self.base_url.format(version=self.version, param=self.param)
-
-    def add_conditional_param(self, operator: And | Or | Period | To):
-        self.q_condition = operator
-    
-    async def send_request(self, url: str):
-        """Sends a request to the Api using the paramters that
-        were added in the url parameters"""
-        headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            self.authoriazation_header: self.api_key
-        }
-
-        if self.api_key is None:
-            raise ValueError('INSEE_API_KEY environment variable is not set')
-
-        async with httpx2.AsyncClient() as client:
-            response = await client.get(url, headers=headers)
-            response.raise_for_status()
-            return response.json()
-
-
-class SingleSearchLegalUnitRequest(BaseRequest):
-    param ='siren'
-    
-    def get_url(self, **kwargs: Any):
-       return super().get_url(**kwargs)
-
-
-class SingleSearchEstablishmentRequest(SingleSearchLegalUnitRequest):
-    param = 'siret'
-
-
-class MultiCriteriaLegalUnitSearchRequest(BaseRequest):
-    param = 'siren'
-
-    def get_url(self, **kwargs: Any):
-        url = super().get_url(**kwargs)
-
-        if self.q_condition is not None:
-            self._query_model.q = self.q_condition.resolve()
-
-        return url + '?' + urlencode(self._query_model.model_dump())
-
-    
-class MultiCriteriaEstablishmentSearchRequest(MultiCriteriaLegalUnitSearchRequest):
-    param = 'siret'
-    
-
-async def query(requester: AbstractRequester, condition: And | Or | To | Period | None = None) -> dict[str, Any]:
-    instance = requester.request_builder(condition=condition)
-    return await instance.send_request(instance.get_url())

@@ -1,34 +1,63 @@
-from backend.base import (
+import pytest
+
+from backend import (
     MultiCriteriaSearchEstablishment,
+    SearchEstablishment,
     query,
 )
-from backend.models import MultiCriteriaSearchQuery
+from backend.models import MultiCriteriaSearchQuery, SingleSearchQuery
 from backend.operators import And, KeyValuePair, LegalUnitEnum
 
 
-async def test_starts_with():
-    pass
-    # instance = SingleSearchEstablishment()
-    # instance.starts_with()
-    # query(instance)
+class TestSingleSearchEstablishment:
+    async def test_invalid_request_builder(self):
+        instance = SearchEstablishment()
+        assert instance.query is not None
+        assert instance.request is None
+
+        with pytest.raises(ValueError):
+            await query(instance, testing=True)
+
+    async def test_valid_request_builder(self):
+        instance = SearchEstablishment(SingleSearchQuery(siren_ou_siret='1234'))
+        assert instance.query is not None
+        assert instance.request is None
+
+        response = await query(instance, testing=True)
+        assert isinstance(response, dict)
+        assert 'url' in response
+
+        url = response['url']
+        assert url == 'https://api.insee.fr/api-sirene/3.11/siret/1234'
 
 
-async def test_request_builder():
-    instance = MultiCriteriaSearchEstablishment()
-    await query(instance)
+
+class TestMultiCriteriaSearchEstablishment:
+    async def test_request_builder(self):
+        instance = MultiCriteriaSearchEstablishment()
+        response = await query(instance, testing=True)
+        assert isinstance(response, dict)
+        assert 'url' in response
+
+        url = response['url']
+        assert url == 'https://api.insee.fr/api-sirene/3.11/siret?q=&nombre=20'
+
+    async def test_valid_request_builder(self):
+        instance = MultiCriteriaSearchEstablishment(MultiCriteriaSearchQuery(q='some value'))
+        response = await query(instance, testing=True)
+
+        assert isinstance(response, dict)
+        assert 'url' in response
+
+        url = response['url']
+        assert url == 'https://api.insee.fr/api-sirene/3.11/siret?q=some+value&nombre=20'
 
 
-async def test_request_builder_with_query():
-    instance = MultiCriteriaSearchEstablishment(MultiCriteriaSearchQuery(q='some value'))
-    await query(instance)
+    async def test_request_builder_with_and(self):
+        condition = And(
+            KeyValuePair(key=LegalUnitEnum.NOM_UNITE_LEGALE, value='A'),
+            KeyValuePair(key=LegalUnitEnum.NOM_UNITE_LEGALE, value='B')
+        )
 
-
-async def test_request_builder_with_and():
-    instance = MultiCriteriaSearchEstablishment()
-
-    condition = And(
-        KeyValuePair(key=LegalUnitEnum.NOM_UNITE_LEGALE, value='A'),
-        KeyValuePair(key=LegalUnitEnum.NOM_UNITE_LEGALE, value='B')
-    )
-
-    await query(instance, condition=condition)
+        instance = MultiCriteriaSearchEstablishment(condition=condition)
+        await query(instance, testing=True)
