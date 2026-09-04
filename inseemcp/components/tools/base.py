@@ -1,11 +1,8 @@
 from fastmcp.tools import ToolResult, tool
 from pydantic import Field
 
-from backend.base import (
-    SingleSearchEstablishment,
-    SingleSearchQuery,
-    query,
-)
+from backend import query
+from backend.base import SearchEstablishment, SearchLegalUnit, SingleSearchQuery
 from models.base import BaseResponseModel
 
 
@@ -18,15 +15,35 @@ async def get_siret(siret: str, date: str | None = Field(default=None, descripti
         siret (str): The SIRET number to search for.
         date (str | None): The date of the SIRET number to search for.
     """
-    instance = SingleSearchEstablishment(SingleSearchQuery(siren=siret, date=date))
+    instance = SearchEstablishment(SingleSearchQuery(siren_ou_siret=siret, date=date))
     response = await query(instance)
     return ToolResult(
         structured_content=response, 
         meta={
-            "search_type_fr": "établissements"
+            "search_type_fr": "établissements",
+            "url": instance.request._final_url
         }
     )
 
+
+@tool
+async def get_siren(siren: str, date: str | None = Field(default=None, description="Date of the SIREN number to search for.")):
+    """
+    Search for a single SIREN number.
+
+    Arguments:
+        siren (str): The SIREN number to search for.
+        date (str | None): The date of the SIREN number to search for.
+    """
+    instance = SearchLegalUnit(SingleSearchQuery(siren_ou_siret=siren, date=date))
+    response = await query(instance)
+    return ToolResult(
+        structured_content=response, 
+        meta={
+            "search_type_fr": "unités légales",
+            "url": instance.request._final_url
+        }
+    )
 
 
 @tool(tags={'search', 'siren', 'establishment'})

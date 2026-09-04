@@ -18,7 +18,7 @@ from backend.requests import (
 )
 
 
-class TestSingleSearchEstablishment:
+class TestSearchEstablishment:
     async def test_invalid_request_builder(self):
         instance = SearchEstablishment()
         assert instance.query is not None
@@ -38,6 +38,24 @@ class TestSingleSearchEstablishment:
 
         url = response['url']
         assert url == 'https://api.insee.fr/api-sirene/3.11/siret/1234'
+
+
+class TestSearchLegalUnit:
+    async def test_invalid_request_builder(self):
+        instance = SearchLegalUnit(SingleSearchQuery(siren_ou_siret='1234'))
+        response = await query(instance, testing=True)
+        assert 'url' in response
+
+        url = response['url']
+        assert url == 'https://api.insee.fr/api-sirene/3.11/siren/1234'
+
+    async def test_valid_request_builder(self):
+        instance = SearchLegalUnit(SingleSearchQuery(siren_ou_siret='1234', date='2000-03-14'))
+        response = await query(instance, testing=True)
+        assert 'url' in response
+
+        url = response['url']
+        assert url == 'https://api.insee.fr/api-sirene/3.11/siren/1234?date=2000-03-14'
 
 
 class TestMultiCriteriaSearchEstablishment:

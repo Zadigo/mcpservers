@@ -56,20 +56,26 @@ class AbstractRequester(ABC):
         if model is None:
             self.request._query_model = self.query
 
-        if self.is_multi_criteria:
-            data = self.query.model_dump()
-        else:
-            # These go the url query parameters
-            _data = self.query.model_dump(exclude=['siren_ou_siret'])
+        # Add the siren_ou_siret to the url parameters
+        if self.query.siren_ou_siret == '':
+            raise ValueError('Trying to call a SearchLegalUnitRequest without a parameter will create a malformed url')
+        
+        self.request.url_extra_params[self.request.param] = self.query.siren_ou_siret        
 
-            # Add the siren_ou_siret to the url parameters
-            if self.query.siren_ou_siret == '':
-                raise ValueError('Trying to call a SearchLegalUnitRequest without a parameter will create a malformed url')
+        # if self.is_multi_criteria:
+        #     data = self.query.model_dump()
+        # else:
+        #     # These go the url query parameters
+        #     # _data = self.query.model_dump(exclude=['siren_ou_siret'])
+
+        #     # Add the siren_ou_siret to the url parameters
+        #     if self.query.siren_ou_siret == '':
+        #         raise ValueError('Trying to call a SearchLegalUnitRequest without a parameter will create a malformed url')
             
-            self.request.url_extra_params[self.request.param] = self.query.siren_ou_siret        
-            data = {self.request.param: self.query.siren_ou_siret} | _data
+        #     self.request.url_extra_params[self.request.param] = self.query.siren_ou_siret        
+        #     # data = {self.request.param: self.query.siren_ou_siret} | _data
 
-        self.request._query_model = self.request._query_model.model_copy(update=data)
+        # self.request._query_model = self.request._query_model.model_copy(update=data)
                 
 
 class SearchLegalUnit(AbstractRequester):

@@ -20,6 +20,7 @@ class BaseRequest(ABC):
         self.q_condition: TypeCondition | None = None
         self.api_key: str = os.environ.get('INSEE_API_KEY')
         self.url_extra_params: dict = {}
+        self._final_url: str | None = None
 
     def __repr__(self):
         return f'<{self.__class__.__name__}: query={self._query_model}>'
@@ -28,7 +29,20 @@ class BaseRequest(ABC):
     def get_url(self):
         """Returns the formatted base url built dynamically 
         using the version, param, and any extra url parameters"""
-        return self.base_url.format(version=self.version, param=self.param, **self.url_extra_params)
+        url = self.base_url.format(version=self.version, param=self.param, **self.url_extra_params)
+        query = self._query_model.model_dump(exclude=['siren_ou_siret'], exclude_none=True)
+
+        if self._query_model is None:
+            raise TypeError('The model used to set the query is not set')
+
+        if self.q_condition is not None:
+            self._query_model.q = self.q_condition.resolve()
+
+        self._final_url = url
+        
+        if query:
+            self._final_url = url + '?' + urlencode(query)
+        return self._final_url
 
     def add_conditional_param(self, operator: TypeCondition):
         self.q_condition = operator
@@ -79,16 +93,7 @@ class MultiCriteriaLegalUnitSearchRequest(BaseRequest):
     param = 'siren'
 
     def get_url(self, **kwargs: Any):
-        url = super().get_url(**kwargs)
-
-        if self._query_model is not None:
-            raise TypeError('The model used to set the query is None')
-
-        if self.q_condition is not None:
-            self._query_model.q = self.q_condition.resolve()
-
-        query = self._query_model.model_dump(exclude_none=True)
-        return url + '?' + urlencode(query)
+       return super().get_url()
 
     
 class MultiCriteriaEstablishmentSearchRequest(MultiCriteriaLegalUnitSearchRequest):
