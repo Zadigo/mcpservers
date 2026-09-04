@@ -2,7 +2,15 @@ from fastmcp.tools import ToolResult, tool
 from pydantic import Field
 
 from backend import query
-from backend.base import SearchEstablishment, SearchLegalUnit, SingleSearchQuery
+from backend.base import (
+    MultiCriteriaSearchLegalUnit,
+    MultiCriteriaSearchQuery,
+    SearchEstablishment,
+    SearchLegalUnit,
+    SingleSearchQuery,
+)
+from backend.operators import KeyValuePair, WildCard
+from models.base import EstablishmentEnum
 
 
 @tool
@@ -46,13 +54,24 @@ async def get_siren(siren: str, date: str | None = Field(default=None, descripti
 
 
 @tool
-async def search_all_siren_startswith(siren: str):
+async def get_siren_startswith(siren: str):
     """
     Search for all SIREN numbers that start with a specific string.
 
     Arguments:
         siren (str): The starting string of the SIREN numbers to search for.
     """
+    kv = KeyValuePair(EstablishmentEnum.SIREN, value=siren)
+    instance = MultiCriteriaSearchLegalUnit(MultiCriteriaSearchQuery(q=siren), condition=WildCard(kv))
+    response = await query(instance)
+    
+    return ToolResult(
+        structured_content=response, 
+        meta={
+            "search_type_fr": "unités légales",
+            "url": instance.request._final_url
+        }
+    )
 
 
 @tool
