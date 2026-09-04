@@ -46,31 +46,44 @@ class MultiCriteriaSearchModel(QueryModel):
         description="Cursor for the multi-criteria search"
     )
 
-class ResponsError(pydantic.BaseModel):
+class ResponseError(pydantic.BaseModel):
     status_code: int
     content: str
+    json_content: dict | None = None
 
 
 class Requester:
     base_url: str = 'https://api.insee.fr/api-sirene/3.11/{param}'
+    single_search_url = 'https://api.insee.fr/api-sirene/3.11/{param}/{value}'
 
-    def __init__(self, param: Literal['siren', 'siret'] = 'siren'):
+    def __init__(self, single_search: bool = True, param: Literal['siren', 'siret'] = 'siren'):
+        self.single_search = single_search
         self._final_url: str = ''
         self.param = param
-        self.error: ResponsError | None = None
+        self.error: ResponseError | None = None
+        self._cached_response: dict | None = None
 
     @property
     def has_error(self):
         return self.error is not None
 
-    def url(self, search: SearchModel | MultiCriteriaSearchModel):
-        initial_url = self.base_url.format(param=self.param)
+    def url(self, search: SearchModel | MultiCriteriaSearchModel, url_param: str | None = None):
+        if self.single_search:
+            url_param = url_param or ''
+
+            if not url_param:
+                raise ValueError(f"URL parameter '{self.param}' is required for single search")
+
+            initial_url = self.single_search_url.format(param=self.param, value=url_param)
+        else:
+            initial_url = self.base_url.format(param=self.param)
+
         query_params = search.model_dump(exclude_none=True)
         if query_params:
             initial_url = initial_url + '?' + urlencode(query_params)
         return initial_url
 
-    async def __call__(self, search: SearchModel | MultiCriteriaSearchModel) -> dict | None:
+    async def __call__(self, search: SearchModel | MultiCriteriaSearchModel, url_param: str | None = None, testing: bool = False) -> dict | None:
         api_key: str = os.environ.get('INSEE_API_KEY')
         headers = {
             'Accept': 'application/json',
@@ -81,14 +94,21 @@ class Requester:
         if api_key is None:
             raise ValueError('INSEE_API_KEY environment variable is not set')
 
+        self._final_url = self.url(search, url_param=url_param)
+        if testing:
+            return {"url": self._final_url, "headers": headers} 
+
         async with httpx2.AsyncClient() as client:
-            response = await client.get(self.url(search), headers=headers)
+            response = await client.get(self._final_url, headers=headers)
             if response.status_code != 200:
-                self.error = ResponsError(
+                self.error = ResponseError(
                     status_code=response.status_code,
-                    content=response.json()
+                    content=response.text,
+                    json_content=response.json()
                 )
-            return response.json()
+
+            self._cached_response = response.json()
+            return self._cached_response
         return None
 
 
@@ -96,8 +116,9 @@ def inversion(value: str) -> str:
     return f'-{value}'
 
 
-def wild_card(value: str) -> str:
-    return f'{value}*'
+def wild_card(key: LegalUnitEnum | EstablishmentEnum, value: str) -> str:
+    result = key_value_pair(key.value, value)
+    return f'{result}*'
 
 
 def key_value_pair(key: str, value: str | None = None) -> str:
