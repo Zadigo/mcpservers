@@ -8,7 +8,7 @@ Elle interroge l'unité légale (l'entreprise dans sa globalité) à l'aide d'un
 
 Elle interroge un établissement précis (le siège social ou un établissement secondaire) à l'aide d'un identifiant à 14 chiffres (les 9 chiffres du SIREN suivis de 5 chiffres propres à l'établissement). L'URL correspond à `/siret/`. Elle renvoie les informations géographiques et opérationnelles de l'établissement concerné. [[1](https://www.kbis.online/siren-siret/), [2](https://www.mypos.com/fr-fr/blog/guide-entreprise/entreprise-en-france-obtenir-siret-et-siren?srsltid=AfmBOopaxleJxrresZ7wvevde2bxoi8SCuzYcn45FsAFyan3PNX9DkO5), [3](https://bpifrance-creation.fr/encyclopedie/formalites-creation-dune-entreprise/formalites-generalites/numeros-didentification)]
 
-> [!INFO]
+> [!INFO] Info
 > Une entreprise possède un seul  **SIREN** , mais peut avoir plusieurs **SIRET** si elle dispose de plusieurs sites ou magasins
 
 ## Présentation de l'API Sirene
@@ -155,6 +155,8 @@ Depuis le 21 mars 2023, la modalité non diffusible "N" n'est plus disponible, e
 
 Activité principale exercée (APE)
 Dans le cadre de sa mission de gestion du répertoire Sirene, l'Insee attribue un code dit activité principale exercée (APE) à partir de la nomenclature d'activités française (NAF) définie par décret. L'APE est déterminée séparément pour l'entreprise dans son ensemble (fonction de la ventilation des activités de l'entreprise) et pour chacun des établissements. Ce code est constitué de quatre chiffres et une lettre d'après la nomenclature actuellement en vigueur. Il est attribué à des fins statistiques et ne peut constituer qu'un élément d'appréciation d'une réglementation ou d'un contrat.
+
+---
 
 ## Définitions
 

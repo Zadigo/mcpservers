@@ -2,7 +2,7 @@
 
 ## Recherche de tous les établissement dont le siren commence par 3
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siret?q=siren:3*&champs=siret,denominationUniteLegale&curseur=*
 ```
 
@@ -61,19 +61,19 @@ https://api.insee.fr/api-sirene/3.11/siret?q=codeCommuneEtablissement:92046
 
 ### Recherche de toutes les UL dont la dénomination contient ou a contenu le mot GAZ :
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siren?q=periode(denominationUniteLegale:GAZ)
 ```
 
 ### Recherche de toutes les UL qui ont été cessées :
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siren?q=periode(etatAdministratifUniteLegale:C)
 ```
 
 ### Recherche de tous les établissements dont le code de l'activité principale a été (ou est*) 33.01 :
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siret?q=periode(activitePrincipaleEtablissement:33.01)
 ```
 
@@ -84,13 +84,13 @@ https://api.insee.fr/api-sirene/3.11/siret?q=periode(activitePrincipaleEtablisse
 
 ### Recherche de tous les établissements dont l'unité légale est considérée comme une personne morale :
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siret?q=-categorieJuridiqueUniteLegale:1000
 ```
 
 ### Recherche de tous les établissements qui n'ont jamais été fermés :
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siret?q=-periode(etatAdministratifEtablissement:F)
 ```
 
@@ -98,37 +98,37 @@ https://api.insee.fr/api-sirene/3.11/siret?q=-periode(etatAdministratifEtablisse
 
 ### Recherche de toutes les entreprises dont l'activité principale est 84.23Z ou 86.21Z, ou l'a été par le passé :
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siren?q=periode(activitePrincipaleUniteLegale:84.23Z OR activitePrincipaleUniteLegale:86.21Z)
 ```
 
 ### Recherche de tous les établissements relevant des catégories juridiques 5510 et 5520 :
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siret?q=categorieJuridiqueUniteLegale:5510 OR categorieJuridiqueUniteLegale:5520
 ```
 
 ### Recherche de tous les établissements qui ont au moins une période où leur état est « actif » et leur activité principale est 84.23Z :
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siret?q=periode(activitePrincipaleEtablissement:84.23Z AND etatAdministratifEtablissement:A)
 ```
 
 ### Recherche de tous les établissements qui ont moins une période dont l'activitePrincipaleEtablissement est 84.23Z et qui n'ont jamais été fermés :
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siret?q=periode(activitePrincipaleEtablissement:84.23Z) AND -periode(etatAdministratifEtablissement:F)
 ```
 
 ### Recherche de tous les établissements de Malakoff dont la dernière catégorie juridique est 9220 :
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siret?q=codeCommuneEtablissement:92046 AND categorieJuridiqueUniteLegale:9220
 ```
 
 ### Recherche de toutes les entreprises exerçant l'activité « marchand de biens » et appartenant à la catégorie PME (Cf. supra : combinaison de variables historisées et non-historisées, paramètre date) :
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siren?q=periode(activitePrincipaleUniteLegale:68.10Z) AND categorieEntreprise:PME&date=2030-12-31
 ```
 
@@ -136,25 +136,25 @@ https://api.insee.fr/api-sirene/3.11/siren?q=periode(activitePrincipaleUniteLega
 
 ### Recherche de toutes les UL dont la date de création est au 01/01/2014 :
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siren?q=dateCreationUniteLegale:2014-01-01
 ```
 
 ### Recherche de toutes les UL dont l'année de création est entre 1980 et 2003 :
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siren?q=dateCreationUniteLegale:[1980 TO 2003]
 ```
 
 ### Recherche de tous les établissements mis à jour au mois de février 2018 et non mis à jour depuis :
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siret?q=dateDernierTraitementEtablissement:2018-02
 ```
 
 ### Recherche de toutes les UL qui ont eu un changement de dénomination l'année 2017 :
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siren?q=periode(changementDenominationUniteLegale:true AND dateDebut:2017)
 ```
 
@@ -162,25 +162,25 @@ https://api.insee.fr/api-sirene/3.11/siren?q=periode(changementDenominationUnite
 
 ### Recherche de tous les etablissements d'UL dont le nom d'usage va de DUPONT à DURAND, y compris DUPONT et DURAND :
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siret?q=nomUsageUniteLegale:[DUPONT TO DURAND]
 ```
 
 ### Recherche de tous les etablissements d'UL dont le nom d'usage va de DUPONT à DURAND, non compris DUPONT et DURAND :
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siret?q=nomUsageUniteLegale:%7BDUPONT TO DURAND%7D
 ```
 
 ### Recherche de tous les etablissements d'UL dont le nom d'usage va de DUPONT à DURAND, Y compris DUPONT et non compris DURAND :
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siret?q=nomUsageUniteLegale:[DUPONT TO DURAND%7D
 ```
 
 ### Recherche de tous les établissements de médecins généralistes dont le nombre de périodes va de 12 à 20 (inclus) :
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siret?q=categorieJuridiqueUniteLegale:1000 AND activitePrincipaleUniteLegale:86.21Z AND nombrePeriodesEtablissement:[12 TO 20]&champs=siret,nombrePeriodesEtablissement
 ```
 
@@ -199,7 +199,7 @@ siret,nombrePeriodesEtablissement
 
 ### Recherche de toutes les unités légales dont la dénomination contient exactement le terme "LE TIMBRE" :
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siren?q=periode(denominationUniteLegale:"LE TIMBRE")
 ```
 
@@ -207,37 +207,37 @@ https://api.insee.fr/api-sirene/3.11/siren?q=periode(denominationUniteLegale:"LE
 
 ### Recherche de tous les établissements des unités légales dont l'activité principale commence par 8
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siret?q=activitePrincipaleUniteLegale:8*
 ```
 
 ### Recherche de tous les établissements des unités légales dont le sigle n'est pas rempli :
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siret?q=-sigleUniteLegale:*
 ```
 
 ### Recherche de toutes les unités légales dont le siren ne commence ni par 1 ni par 2 (Etat et collectivités)
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siren?q=-siren:1* AND -siren:2*
 ```
 
 ### Recherche de toutes les unités légales dont la date de création est renseignée
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siren?q=dateCreationUniteLegale:*&champs=siren,dateCreationUniteLegale
 ```
 
 ### Recherche de toutes les unités légales dont la date de création n'est pas renseignée
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siren?q=-dateCreationUniteLegale:*&champs=siren
 ```
 
 ### Recherche de tous les établissements des unités légales dont la dénomination commence par "LAMI"
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siret?q=denominationUniteLegale:lami*&champs=denominationUniteLegale
 ```
 
@@ -263,13 +263,13 @@ LAMISSE
 
 ### Recherche de tous les établissements dont l'unité légale a un sigle sur 3 positions
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siret?q=sigleUniteLegale:???
 ```
 
 ### Recherche de tous les établissements dont l'unité légale a un sigle qui commence par FC et est sur 3 positions exactement
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siret?q=sigleUniteLegale:FC?
 ```
 
@@ -277,13 +277,13 @@ https://api.insee.fr/api-sirene/3.11/siret?q=sigleUniteLegale:FC?
 
 ### Recherche de tous les établissements dont l'unité légale a comme prenom1UniteLegale MICKAEL à deux caractères près, mais pas MICKAEL exactement :
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siret?q=prenom1UniteLegale:MICKAEL~ AND -prenom1UniteLegale:MICKAEL
 ```
 
 ### Recherche de tous les établissements dont l'unité légale a pour sigle PAUL à une erreur près
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siret?q=sigleUniteLegale:PAUL~1
 ```
 
@@ -291,7 +291,7 @@ https://api.insee.fr/api-sirene/3.11/siret?q=sigleUniteLegale:PAUL~1
 
 **Sans le ~ (recherche exacte) :**
 
-```text
+```
 https://api.insee.fr/api-sirene/3.11/siret?q=denominationUniteLegale:"bleu le"&nombre=20&champs=denominationUniteLegale
 ```
 
