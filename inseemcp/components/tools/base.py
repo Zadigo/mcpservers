@@ -1,16 +1,16 @@
+
 from fastmcp.tools import ToolResult, tool
 from pydantic import Field
 
-from backend import query
-from backend.base import (
-    MultiCriteriaSearchLegalUnit,
-    MultiCriteriaSearchQuery,
-    SearchEstablishment,
-    SearchLegalUnit,
-    SingleSearchQuery,
+from backend.simple_requester import (
+    MultiCriteriaSearchModel,
+    Requester,
+    condition_and,
+    condition_or,
+    condition_period,
 )
-from backend.operators import KeyValuePair, WildCard
-from models.base import EstablishmentEnum
+from models.base import BaseResponseModel, LegalUnitEnum
+from utils import logger
 
 
 @tool
@@ -22,15 +22,15 @@ async def get_siret(siret: str, date: str | None = Field(default=None, descripti
         siret (str): The SIRET number to search for.
         date (str | None): The date of the SIRET number to search for.
     """
-    instance = SearchEstablishment(SingleSearchQuery(siren_ou_siret=siret, date=date))
-    response = await query(instance)
-    return ToolResult(
-        structured_content=response, 
-        meta={
-            "search_type_fr": "établissements",
-            "url": instance.request._final_url
-        }
-    )
+    # instance = SearchEstablishment(SingleSearchQuery(siren_ou_siret=siret, date=date))
+    # response = await query(instance)
+    # return ToolResult(
+    #     structured_content=response, 
+    #     meta={
+    #         "search_type_fr": "établissements",
+    #         "url": instance.request._final_url
+    #     }
+    # )
 
 
 @tool
@@ -42,15 +42,15 @@ async def get_siren(siren: str, date: str | None = Field(default=None, descripti
         siren (str): The SIREN number to search for.
         date (str | None): The date of the SIREN number to search for.
     """
-    instance = SearchLegalUnit(SingleSearchQuery(siren_ou_siret=siren, date=date))
-    response = await query(instance)
-    return ToolResult(
-        structured_content=response, 
-        meta={
-            "search_type_fr": "unités légales",
-            "url": instance.request._final_url
-        }
-    )
+    # instance = SearchLegalUnit(SingleSearchQuery(siren_ou_siret=siren, date=date))
+    # response = await query(instance)
+    # return ToolResult(
+    #     structured_content=response, 
+    #     meta={
+    #         "search_type_fr": "unités légales",
+    #         "url": instance.request._final_url
+    #     }
+    # )
 
 
 @tool
@@ -61,23 +61,23 @@ async def get_siren_startswith(siren: str):
     Arguments:
         siren (str): The starting string of the SIREN numbers to search for.
     """
-    try:
-        kv = KeyValuePair(key=EstablishmentEnum.SIREN, value=siren)
-        instance = MultiCriteriaSearchLegalUnit(query=MultiCriteriaSearchQuery(q=WildCard(kv)))
-        response = await query(instance)
-    except Exception as e:
-        return ToolResult(
-            content=f"An error occured: {e}",
-            is_error=True,
-        )
-    else:
-        return ToolResult(
-            structured_content=response, 
-            meta={
-                "search_type_fr": "unités légales",
-                "url": instance.request._final_url
-            }
-        )
+    # try:
+    #     kv = KeyValuePair(key=EstablishmentEnum.SIREN, value=siren)
+    #     instance = MultiCriteriaSearchLegalUnit(query=MultiCriteriaSearchQuery(q=WildCard(kv)))
+    #     response = await query(instance)
+    # except Exception as e:
+    #     return ToolResult(
+    #         content=f"An error occured: {e}",
+    #         is_error=True,
+    #     )
+    # else:
+    #     return ToolResult(
+    #         structured_content=response, 
+    #         meta={
+    #             "search_type_fr": "unités légales",
+    #             "url": instance.request._final_url
+    #         }
+    #     )
 
 
 @tool
@@ -116,14 +116,44 @@ async def search_for_establishments_by_name(name: str):
 
 
 @tool
-async def search_for_establishments_by_activity_code(activity_code: str = Field(description="The activity code of the establishments to search for.")):
+async def search_legal_units_by_activity_codes(
+    activity_codes: list[str] = Field(default_factory=list, description="The activity codes of the legal units to search for."),
+    inclusive: bool = Field(default=True, description="Whether to include legal units with any of the activity codes (True) or all of them (False)."),
+) -> BaseResponseModel:
     """
-    Search for establishments with a specific activity code.
+    Search for legal units with a specific activity code.
 
     Arguments:
-        activity_code (str): The activity code of the establishments to search for.
+        activity_codes (list[str]): The activity codes of the legal units to search for.
+        inclusive (bool): Whether to include legal units with any of the activity codes (True) or all of them (False).
     """
+    instance = Requester()
 
+    if len(activity_codes) == 0:
+        return ToolResult(content="No activity codes provided.", is_error=True)
+
+    str_query: str = ""
+    if len(activity_codes) == 1:
+        str_query = activity_codes[0]
+    else:
+        and_conditions = condition_and(LegalUnitEnum.ACTIVITE_PRINCIPALE_UNITE_LEGALE, *activity_codes)
+        or_conditions = condition_or(LegalUnitEnum.ACTIVITE_PRINCIPALE_UNITE_LEGALE, *activity_codes)
+        str_query: str = and_conditions if inclusive else or_conditions
+
+    query = MultiCriteriaSearchModel(q=condition_period(str_query))
+    response = await instance(query)
+
+    if instance.has_error:
+        return ToolResult(content=instance.error.content, is_error=True)
+
+    return ToolResult(
+        structured_content=response, 
+        meta={
+            "search_type_fr": "unités légales",
+            "url": instance._final_url
+        }
+    )
+    
 
 @tool
 async def search_for_terminated_legal_units():

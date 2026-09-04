@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from backend.operators import BaseOperator, WildCard, KeyValuePair
+from backend.operators import BaseOperator, KeyValuePair, WildCard
 from backend.typings import TypeCondition
 
 
