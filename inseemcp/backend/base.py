@@ -49,6 +49,9 @@ class AbstractRequester(ABC):
         self.update_request_query()
 
     def update_request_query(self):
+        if self.request is None:
+            raise ValueError('Cannot updatea request that is None')
+        
         model = getattr(self.request, '_query_model', None)
         if model is None:
             self.request._query_model = self.query

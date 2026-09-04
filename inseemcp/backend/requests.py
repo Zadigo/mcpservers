@@ -81,6 +81,9 @@ class MultiCriteriaLegalUnitSearchRequest(BaseRequest):
     def get_url(self, **kwargs: Any):
         url = super().get_url(**kwargs)
 
+        if self._query_model is not None:
+            raise TypeError('The model used to set the query is None')
+
         if self.q_condition is not None:
             self._query_model.q = self.q_condition.resolve()
 
