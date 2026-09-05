@@ -87,7 +87,7 @@ class Requester:
         return initial_url
 
     async def __call__(self, search: SearchModel | MultiCriteriaSearchModel, url_param: str | None = None, testing: bool = False) -> dict | None:
-        api_key: str = os.environ.get('INSEE_API_KEY')
+        api_key: str | None = os.environ.get('INSEE_API_KEY')
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
@@ -135,6 +135,7 @@ def key_value_pair(key: str | BusinessColumnEnum, value: str | None = None) -> s
 
 
 def join_operator(operator: Literal['AND', 'OR'], *values: str) -> str:
+    """Joins a set of query parameters with an AND or OR operator"""
     return f' {operator} '.join(values)
 
 

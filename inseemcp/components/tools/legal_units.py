@@ -11,7 +11,7 @@ from backend.simple_requester import (
     wild_card,
 )
 from components.utils import select_response
-from models.base import BusinessColumnEnum, EstablishmentEnum
+from models.base import BusinessColumnEnum
 
 
 @tool
@@ -24,7 +24,7 @@ async def get_siret(siret: str, date: str | None = None):
         date (str | None): The date of the SIRET number to search for.
     """
     instance = Requester(single_search=True, param='siret')
-    await instance(SearchModel(data=date), url_param=siret)
+    await instance(SearchModel(date=date), url_param=siret)
     return select_response(instance)
 
 
@@ -38,7 +38,7 @@ async def get_siren_startswith(siren: str):
     """
     instance = Requester(single_search=False, param='siren')
 
-    str_query = wild_card(EstablishmentEnum.SIREN, siren)
+    str_query = wild_card(BusinessColumnEnum.SIREN, siren)
     query = MultiCriteriaSearchModel(q=str_query)
 
     await instance(query, url_param=siren)

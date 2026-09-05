@@ -7,7 +7,7 @@ from backend.simple_requester import (
     condition_or,
     condition_period,
 )
-from models.base import BaseResponseModel, LegalUnitEnum
+from models.base import BaseResponseModel, BusinessColumnEnum
 from utils import logger
 
 
@@ -32,8 +32,8 @@ async def search_entreprises_by_activity_codes(
     if len(activity_codes) == 1:
         str_query = activity_codes[0]
     else:
-        and_conditions = condition_and(LegalUnitEnum.ACTIVITE_PRINCIPALE_UNITE_LEGALE, *activity_codes)
-        or_conditions = condition_or(LegalUnitEnum.ACTIVITE_PRINCIPALE_UNITE_LEGALE, *activity_codes)
+        and_conditions = condition_and(BusinessColumnEnum.ACTIVITE_PRINCIPALE_UNITE_LEGALE, *activity_codes)
+        or_conditions = condition_or(BusinessColumnEnum.ACTIVITE_PRINCIPALE_UNITE_LEGALE, *activity_codes)
         str_query: str = and_conditions if inclusive else or_conditions
 
     query = MultiCriteriaSearchModel(q=condition_period(str_query))

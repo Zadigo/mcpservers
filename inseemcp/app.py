@@ -9,6 +9,7 @@ from mcp_types import (
     PromptReference,
     ResourceTemplateReference,
 )
+from pydantic import AnyUrl
 
 from models.base import BusinessColumnEnum
 from utils import BASE_DIR, logger
@@ -47,7 +48,7 @@ if BASE_DIR.joinpath('components', 'resources', 'data').is_dir():
     fullpath = BASE_DIR.joinpath('components', 'resources', 'data')
 
     static_resources = DirectoryResource(
-        uri="resource://dataset-descriptions",
+        uri=AnyUrl("resource://dataset-descriptions"),
         path=fullpath,
         name="Dataset Descriptions",
         description="Contains descriptions of various datasets available for analysis.",

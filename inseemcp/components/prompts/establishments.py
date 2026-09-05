@@ -128,7 +128,7 @@ def find_establishments_excluding_siren_prefix(
 
 
 @prompt
-def find_businesses_similary_to_code_activity(code_actvity: str, location: str = '*') -> PromptResult:
+def find_enterprise_by_activity(code_actvity: str, location: str = '*') -> PromptResult:
     d = datetime.datetime.now(tz=datetime.UTC)
 
     current_year = d.year

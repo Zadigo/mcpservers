@@ -1,0 +1,14 @@
+services:
+  inseemcp:
+    build: .
+    environment:
+      - INSEE_API_KEY=${INSEE_API_KEY}
+    # depends_on:
+    #   - redis
+    ports:
+      - "8000:8000"
+
+  # redis:
+  #   image: "redis:alpine"
+  #   ports:
+  #     - "6379:6379"
