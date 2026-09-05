@@ -26,6 +26,25 @@ async def get_siren(siren: str, date: str | None = None):
     return select_response(instance)
 
 
+
+@tool
+async def get_siren_startswith(siren: str):
+    """
+    Search for all SIREN numbers that start with a specific string.
+
+    Arguments:
+        siren (str): The starting string of the SIREN numbers to search for.
+    """
+    instance = Requester(single_search=False, param='siren')
+
+    str_query = wild_card(BusinessColumnEnum.SIREN, siren)
+    query = MultiCriteriaSearchModel(q=str_query)
+
+    await instance(query, url_param=siren)
+    return select_response(instance)
+
+
+
 @tool
 async def establishments_siren_not_start_by(siren: list[str]):
     """

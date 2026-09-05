@@ -61,7 +61,7 @@ class Requester:
         self._final_url: str = ''
         self.param = param
         self.error: ResponseError | None = None
-        self._cached_response: dict | None = None
+        self._cached_response: httpx2.Response | None = None
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__}: [{self._final_url}]>'
@@ -102,7 +102,15 @@ class Requester:
             return {"url": self._final_url, "headers": headers} 
 
         async with httpx2.AsyncClient() as client:
-            response = await client.get(self._final_url, headers=headers)
+            response = await client.get(self._final_url, headers=headers, timeout=30)
+            if response.status_code == 404:
+                self.error = ResponseError(
+                    status_code=response.status_code,
+                    content="The requested resource was not found",
+                    json_content=response.json()
+                )
+                return None
+
             if response.status_code != 200:
                 self.error = ResponseError(
                     status_code=response.status_code,
@@ -110,8 +118,8 @@ class Requester:
                     json_content=response.json()
                 )
 
-            self._cached_response = response.json()
-            return self._cached_response
+            self._cached_response = response
+            return self._cached_response.json()
         return None
 
 
@@ -134,9 +142,9 @@ def key_value_pair(key: str | BusinessColumnEnum, value: str | None = None) -> s
     return f'{key}:{value}'
 
 
-def join_operator(operator: Literal['AND', 'OR'], *values: str) -> str:
+def join_operator(operator: Literal['AND', 'OR'], *values: str | None) -> str:
     """Joins a set of query parameters with an AND or OR operator"""
-    return f' {operator} '.join(values)
+    return f' {operator} '.join([v for v in values if v is not None])
 
 
 def condition_and(column: BusinessColumnEnum, *values: str) -> str:
