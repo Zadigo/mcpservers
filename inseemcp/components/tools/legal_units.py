@@ -31,7 +31,10 @@ async def get_siret(siret: str, date: str | None = None):
 @tool
 async def get_legal_unit_name_startswith(name: str):
     """
-    Search for all legal units where a specific column's value starts with a specific string.
+    Search for all legal units where the legal unit's name starts with the specified string.
+    This function performs a wildcard search on the columns `nomUniteLegale` and `nomUsageUniteLegale`.
+    Refer to the `etablissement.md` resource documentation for more details on the column types and
+    definitions.
 
     Arguments:
         name (str): The starting string of the legal unit names to search for.

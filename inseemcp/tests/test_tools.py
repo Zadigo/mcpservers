@@ -59,7 +59,7 @@ class TestSearchEstablishmentsNameStartsWith:
         assert result is not None
 
     async def test_with_values(self):
-        result = await search_establishments_name_startswith(name="OpenAI")
+        result = await search_establishments_name_startswith(name="Lecl")
         assert result is not None
 
 
