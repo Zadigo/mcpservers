@@ -72,6 +72,7 @@ def find_legal_units_by_name_prefix(name: str) -> PromptResult:
 
                 If there are many matches, summarize the result and present the most
                 relevant matches rather than producing an unnecessarily large response.
+                
                 Do not invent or infer legal units that are not present in the INSEE data.
                 """
             )
