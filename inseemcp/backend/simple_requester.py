@@ -6,6 +6,7 @@ import httpx2
 import pydantic
 from pydantic import Field
 
+from backend.models import ResponseError
 from models.base import BusinessColumnEnum
 
 AUTHORIZATION_HEADER: str = 'X-INSEE-Api-Key-Integration'
@@ -45,11 +46,6 @@ class MultiCriteriaSearchModel(QueryModel):
         default=None,
         description="Cursor for the multi-criteria search"
     )
-
-class ResponseError(pydantic.BaseModel):
-    status_code: int
-    content: str
-    json_content: dict | None = None
 
 
 class Requester:

@@ -9,6 +9,7 @@ from components.tools.legal_units import (
     get_legal_units_by_name,
     legal_units_exact_search,
 )
+from components.tools.university import get_university_by_name
 
 
 class TestSearchLegalUnitsByActivityCodes:
@@ -86,4 +87,14 @@ class TestLegalUnitsByName:
 
     async def test_with_values_and_postal_code(self):
         result = await get_legal_units_by_name(name="Leclerc", postal_code="5900")
+        assert result is not None
+
+
+class TestGetUniversityByName:
+    async def test_no_values(self):
+        result = await get_university_by_name(name="")
+        assert result is not None
+
+    async def test_with_values(self):
+        result = await get_university_by_name(name="lille")
         assert result is not None

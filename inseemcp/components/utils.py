@@ -1,3 +1,6 @@
+from collections.abc import Hashable, Sequence
+from typing import Any
+
 from fastmcp.tools import ToolResult
 
 from backend.simple_requester import (
@@ -23,3 +26,20 @@ def select_response(instance: Requester):
         structured_content=content, 
         meta=meta
     )
+
+
+def select_response_from_data(data: Sequence[dict[str | Hashable, Any]], meta: dict[str, Any] | None = None):    
+    if len(data) > 0:
+        return ToolResult(
+            structured_content={
+                'results': data
+            }, 
+            meta=meta
+        )
+    return ToolResult(
+        content="No data available", 
+        meta=meta,
+        is_error=True
+    )
+
+

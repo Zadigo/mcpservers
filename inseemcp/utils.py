@@ -20,7 +20,7 @@ def get_redis():
 
     try:
         client.ping()
-    except redis.exceptions.ConnectionError:
+    except redis.ConnectionError:
         raise RuntimeError(f"Could not connect to Redis at {redis_url}")
 
     return client
