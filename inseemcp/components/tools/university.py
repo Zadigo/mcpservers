@@ -1,16 +1,16 @@
-from collections.abc import Sequence
+
 from typing import Any
 
 import pandas
 from fastmcp.tools import tool
 
 from backend.base import UniversityRequest
+from backend.utils import BaseRequest
 from models.university import UniversityModel
 
 
-def filter_data(data: Sequence[dict[str, Any]], name: str | None = None):
-    df = pandas.DataFrame(data)
-
+def filter_data(request: BaseRequest, name: str | None = None) -> list[dict[str, Any]]:
+    df = request.dataframe
     if name is not None:
         df = df[
             (df["nom_court"].str.casefold() == name.casefold()) |
@@ -27,7 +27,7 @@ def filter_data(data: Sequence[dict[str, Any]], name: str | None = None):
     # df = df.where(df.notna(), None)
     df.replace({pandas.NA: None}, inplace=True)
     df.replace({float('nan'): None}, inplace=True)
-    return df.to_dict(orient="records")
+    return df.to_dict(orient="records") # pyright: ignore[reportReturnType]
 
 
 @tool
@@ -36,7 +36,7 @@ async def get_university_by_name(name: str) -> list[UniversityModel]:
     await instance()
     if instance._cached_response is None:
         return []
-    data = filter_data(instance._cached_response.json(), name=name)
+    data = filter_data(instance, name=name)
     return [UniversityModel(**item) for item in data]
 
 
@@ -45,7 +45,7 @@ async def get_university_by_siren(siren: str) -> list[UniversityModel]:
     await instance()
     if instance._cached_response is None:
         return []
-    data = filter_data(instance._cached_response.json(), name=None)
+    data = filter_data(instance, name=None)
     data = [item for item in data if siren in item.get("siren", [])]
     return [UniversityModel(**item) for item in data]
 
@@ -55,6 +55,6 @@ async def get_university_by_siret(siret: str) -> list[UniversityModel]:
     await instance()
     if instance._cached_response is None:
         return []
-    data = filter_data(instance._cached_response.json(), name=None)
+    data = filter_data(instance, name=None)
     data = [item for item in data if siret in item.get("siret", [])]
     return [UniversityModel(**item) for item in data]

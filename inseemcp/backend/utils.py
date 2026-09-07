@@ -3,6 +3,7 @@ from collections.abc import Sequence
 from typing import Any
 
 import httpx2
+import pandas
 from pydantic import BaseModel
 
 from backend.models import ResponseError
@@ -25,6 +26,14 @@ class BaseRequest(ABC):
     @property
     def url(self):
         return '' if self.base_url is None else self.base_url
+
+    @property
+    def dataframe(self):
+        if self._cached_response is None:
+            return pandas.DataFrame()
+        
+        cleaned_data = self.clean(self._cached_response.json())
+        return pandas.DataFrame(cleaned_data)
 
     def clean(self, data: TypeDataReturn) -> TypeDataReturn:
         """Use the clean function to process the data before returning it.

@@ -1,6 +1,5 @@
 from typing import Any
 
-import pandas
 import pydantic
 from pydantic import Field, model_validator
 
@@ -24,7 +23,7 @@ class UniversityModel(pydantic.BaseModel):
     adresse_uai: str | None = Field(
         default=None
     )
-    anciens_codes_uai: list[str] | None = Field(
+    anciens_codes_uai: str | None = Field(
         default=None
     )
     article: str | None = Field(
@@ -87,8 +86,8 @@ class UniversityModel(pydantic.BaseModel):
     compte_youtube: str | None = Field(
         default=None
     )
-    coordonnees: UniversityCoordinatesModel = Field(
-        default_factory=UniversityCoordinatesModel
+    coordonnees: str | None = Field(
+        default=None
     )
     date_creation: str | None = Field(
         default=None
@@ -126,7 +125,7 @@ class UniversityModel(pydantic.BaseModel):
     identifiant_eter: str | None = Field(
         default=None
     )
-    identifiant_idref: list[str] | None = Field(
+    identifiant_idref: str | None = Field(
         default=None
     )
     identifiant_isni: str | None = Field(
@@ -138,72 +137,72 @@ class UniversityModel(pydantic.BaseModel):
     identifiant_pic: str | None = Field(
         default=None
     )
-    identifiant_ror: list[str] | None = Field(
+    identifiant_ror: str | None = Field(
         default=None
     )
-    identifiant_wikidata: list[str] | None = Field(
+    identifiant_wikidata: str | None = Field(
         default=None
     )
     inscrits: str | None = Field(
         default=None
     )
-    inscrits_2010: str | None = Field(
+    inscrits_2010: float | None = Field(
         default=None,
         ge=0
     )
-    inscrits_2011: str | None = Field(
+    inscrits_2011: float | None = Field(
         default=None,
         ge=0
     )
-    inscrits_2012: str | None = Field(
+    inscrits_2012: float | None = Field(
         default=None,
         ge=0
     )
-    inscrits_2013: str | None = Field(
+    inscrits_2013: float | None = Field(
         default=None,
         ge=0
     )
-    inscrits_2014: str | None = Field(
+    inscrits_2014: float | None = Field(
         default=None,
         ge=0
     )
-    inscrits_2015: str | None = Field(
+    inscrits_2015: float | None = Field(
         default=None,
         ge=0
     )
-    inscrits_2016: str | None = Field(
+    inscrits_2016: float | None = Field(
         default=None,
         ge=0
     )
-    inscrits_2017: str | None = Field(
+    inscrits_2017: float | None = Field(
         default=None,
         ge=0
     )
-    inscrits_2018: int | None = Field(
+    inscrits_2018: float | None = Field(
         default=None,
         ge=0
     )
-    inscrits_2019: int | None = Field(
+    inscrits_2019: float | None = Field(
         default=None,
         ge=0
     )
-    inscrits_2020: int | None = Field(
+    inscrits_2020: float | None = Field(
         default=None,
         ge=0
     )
-    inscrits_2021: int | None = Field(
+    inscrits_2021: float | None = Field(
         default=None,
         ge=0
     )
-    inscrits_2022: int | None = Field(
+    inscrits_2022: float | None = Field(
         default=None,
         ge=0
     )
-    inscrits_2023: int | None = Field(
+    inscrits_2023: float | None = Field(
         default=None,
         ge=0
     )
-    inscrits_2024: int | None = Field(
+    inscrits_2024: float | None = Field(
         default=None,
         ge=0
     )
@@ -243,7 +242,7 @@ class UniversityModel(pydantic.BaseModel):
     reg_nom_old: str | None = Field(
         default=None
     )
-    rna: list[str] | None = Field(
+    rna: str | None = Field(
         default=None
     )
     scanr: str | None = Field(
@@ -255,10 +254,10 @@ class UniversityModel(pydantic.BaseModel):
     sigle: str | None = Field(
         default=None
     )
-    siren: list[str] | None = Field(
+    siren: str | None = Field(
         default=None
     )
-    siret: list[str] | None = Field(
+    siret: str | None = Field(
         default=None
     )
     statut_juridique_court: str | None = Field(
@@ -273,7 +272,7 @@ class UniversityModel(pydantic.BaseModel):
     texte_de_ref_creation_lib: str | None = Field(
         default=None
     )
-    type_d_etablissement: list[str] | None = Field(
+    type_d_etablissement: str | None = Field(
         default=None
     )
     typologie_d_universites_et_assimiles: str | None = Field(
@@ -330,18 +329,8 @@ class UniversityModel(pydantic.BaseModel):
 
     @model_validator(mode='before')
     @classmethod
-    def check_card_number_not_present(cls, data: Any) -> Any:
+    def check_columns(cls, data: Any) -> Any:
         if isinstance(data, dict):
-            list_values = [
-                'siren', 
-                'siret', 
-                'identifiant_idref', 
-                'identifiant_ror', 
-                'identifiant_wikidata', 
-                'type_d_etablissement'
-            ]
-            for key, value in data.items():
-                if key in list_values:
-                    data[key] = ','.join(value)
+            pass
         return data
     
