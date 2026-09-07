@@ -107,3 +107,27 @@ async def get_legal_units_by_name(name: str, postal_code: str | None = None, cou
     str_query = join_operator('AND', str_query1, str_query2)
     await instance(MultiCriteriaSearchModel(q=str_query, debut=offset, nombre=count))
     return select_response(instance)
+
+
+@tool
+async def search_legal_units_by_address(street_name: str, postal_code: str | None = None, count: int = 20, offset: int = 0):
+    """Search for legal units where the address matches the given value and optionally filter by postal code.
+
+    Arguments:
+        street_name (str): The street name to search for in the address of legal units.
+        postal_code (str | None): The postal code to filter the legal units by.
+        count (int): The number of search results to return.
+        offset (int): The offset for the search results.
+    """
+    instance = Requester(single_search=False, param='siret')
+
+    str_query1 = wild_card(BusinessColumnEnum.LIBELLE_VOIE_ETABLISSEMENT)
+    str_query2 = wild_card(BusinessColumnEnum.LIBELLE_VOIE_ETABLISSEMENT, street_name, quote_value=True)
+    str_query3: str | None = None
+
+    if postal_code is not None:
+        str_query3 = key_value_pair(BusinessColumnEnum.CODE_POSTAL_ETABLISSEMENT, postal_code)
+
+    str_query = join_operator('AND', str_query1, str_query2, str_query3)
+    await instance(MultiCriteriaSearchModel(q=str_query, debut=offset, nombre=count))
+    return select_response(instance)

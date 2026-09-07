@@ -450,3 +450,4 @@ class BusinessColumnEnum(enum.Enum):
     ANNEE_CATEGORIE_ENTREPRISE = "anneeCategorieEntreprise"
     ACTIVITE_PRINCIPALE_NAF25_UNITE_LEGALE = "activitePrincipaleNAF25UniteLegale"
     CODE_POSTAL_ETABLISSEMENT = "codePostalEtablissement"
+    LIBELLE_VOIE_ETABLISSEMENT = "libelleVoieEtablissement"

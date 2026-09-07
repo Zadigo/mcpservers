@@ -49,7 +49,9 @@ async def get_university_by_siren(siren: str) -> list[UniversityModel]:
 
     When to use this tool:
     - When an initial results for a SIREN in the INSEE database points to the type of
-        of establishment or legal unit being a university or a "grande école"
+        of establishment or legal unit being a university or a "grande école" by checking
+        the NAF code for establishments that are classified as those for teaching and research: 85
+        (for example 85.42Z for higher education establishments)
     - When additional context to these main results are needed by enriching them
         with data from this dataset
 
@@ -92,7 +94,9 @@ async def get_university_by_siret(siret: str) -> list[UniversityModel]:
 
     When to use this tool:
     - When an initial results for a SIRET in the INSEE database points to the type of
-        of establishment or legal unit being a university or a "grande école"
+        of the legal unit being a university or a "grande école" by checking
+        the NAF code for establishments that are classified as those for teaching and research: 85
+        (for example 85.42Z for higher education establishments)
     - When additional context to these main results are needed by enriching them
         with data from this dataset
 

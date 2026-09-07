@@ -123,14 +123,17 @@ def inversion(value: str) -> str:
     return f'-{value}'
 
 
-def wild_card(key: BusinessColumnEnum, value: str | None = None) -> str:
-    result = key_value_pair(key.value, value)
+def wild_card(key: BusinessColumnEnum, value: str | None = None, quote_value: bool = False) -> str:
+    result = key_value_pair(key.value, value, quote_value=quote_value)
     return f'{result}*'
 
 
-def key_value_pair(key: str | BusinessColumnEnum, value: str | None = None) -> str:
+def key_value_pair(key: str | BusinessColumnEnum, value: str | None = None, quote_value: bool = False) -> str:
     if value is None:
         value = ''
+
+    if quote_value and value is not None:
+        value = f'"{value}"'
 
     if isinstance(key, BusinessColumnEnum):
         key = key.value

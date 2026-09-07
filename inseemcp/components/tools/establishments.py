@@ -1,4 +1,12 @@
+import asyncio
+import json
+import pathlib
+import secrets
+
+import aiofile
+from fastmcp import Client
 from fastmcp.tools import tool
+from fastmcp.utilities.types import File
 
 from backend.simple_requester import (
     MultiCriteriaSearchModel,
@@ -6,10 +14,12 @@ from backend.simple_requester import (
     SearchModel,
     inversion,
     join_operator,
+    key_value_pair,
     wild_card,
 )
 from components.utils import select_response
-from models.base import BusinessColumnEnum
+from models.base import BaseResponseModel, BusinessColumnEnum
+from utils import get_redis
 
 
 @tool
@@ -153,3 +163,68 @@ async def search_establishments_name_startswith(name: str, postal_code: str | No
 
     await instance(query)
     return select_response(instance)
+
+
+async def paginate_establishments(siren: str):
+    """
+    Paginate through establishments associated with a specific SIREN number.
+
+    Arguments:
+        siren (str): The SIREN number of the legal unit to retrieve establishments for.
+
+    Returns:
+        A collection of establishment records associated with the specified SIREN number. Each result may
+        contain establishment and legal-unit information returned by the INSEE API.
+    """
+    from app import mcp
+
+
+    job_id: str = secrets.token_hex(16)
+    cache_key: str = f"inseemcp:{job_id}"
+
+    redis_client = get_redis()
+
+    instance = Requester(single_search=False, param='siret')
+    async with Client(mcp, mode="auto") as client:
+        # Initial query to get the first page of results
+        str_query = key_value_pair(BusinessColumnEnum.SIREN, siren)
+        query = MultiCriteriaSearchModel(q=str_query, debut=0, nombre=20)
+        await instance(query)
+
+        if instance._cached_response is not None:
+            results = BaseResponseModel(**instance._cached_response.json())
+
+            current_offset: int = 0
+            number_of_pages: int = (results.header.total + 20 - 1) // 20
+
+            while current_offset < number_of_pages * 20:
+                str_query = key_value_pair(BusinessColumnEnum.SIREN, siren)
+                query = MultiCriteriaSearchModel(q=str_query, debut=current_offset, nombre=20)
+                await instance(query)
+
+                # Push the results of each page to the Redis list
+                other_responses = BaseResponseModel(**instance._cached_response.json())
+                redis_client.lpush(cache_key, [json.dumps(item.model_dump(mode='json')) for item in other_responses.etablissements]) # pyright: ignore[reportArgumentType]
+
+                current_offset += 20
+                await asyncio.sleep(5)
+
+        results = []
+        while redis_client.llen(cache_key) > 0:
+            page_content = redis_client.rpop(cache_key)
+            if page_content:
+                results.extend(json.loads(page_content)) # pyright: ignore[reportArgumentType]
+
+    fullpath = pathlib.Path(f'./tmp/establishments_{job_id}.json')
+    async with aiofile.async_open(fullpath, 'w') as f:
+        await f.write(json.dumps(results))
+
+        redis_client.delete(cache_key)
+        async with aiofile.async_open(fullpath, 'rb') as f:
+            data = await f.read()
+            
+            return File(
+                path=fullpath, 
+                data=data, 
+                format='json'
+            )
