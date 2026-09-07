@@ -9,7 +9,7 @@ from components.tools.legal_units import (
     get_legal_units_by_name,
     legal_units_exact_search,
 )
-from components.tools.university import get_university_by_name
+from components.tools.university import get_university_by_siren, get_university_by_siret
 
 
 class TestSearchLegalUnitsByActivityCodes:
@@ -90,11 +90,21 @@ class TestLegalUnitsByName:
         assert result is not None
 
 
-class TestGetUniversityByName:
+class TestGetUniversityBySiren:
     async def test_no_values(self):
-        result = await get_university_by_name(name="")
+        result = await get_university_by_siren(siren="")
         assert result is not None
 
     async def test_with_values(self):
-        result = await get_university_by_name(name="lille")
+        result = await get_university_by_siren(siren="123456789")
+        assert result is not None
+
+
+class TestGetUniversityBySiret:
+    async def test_no_values(self):
+        result = await get_university_by_siret(siret="")
+        assert result is not None
+
+    async def test_with_values(self):
+        result = await get_university_by_siret(siret="12345678901234")
         assert result is not None

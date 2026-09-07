@@ -3,6 +3,9 @@ from models.university import UniversityModel
 
 
 class UniversityRequest(BaseRequest):
+    """A request that adds additional context to a main search for a
+    SIREN or SIRET with the INSEE database."""
+    
     base_url = 'https://data.enseignementsup-recherche.gouv.fr/api/explore/v2.1/catalog/datasets/fr-esr-principaux-etablissements-enseignement-superieur/exports/json'
     model: type[UniversityModel] = UniversityModel
 
