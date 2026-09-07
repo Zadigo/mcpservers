@@ -38,3 +38,7 @@ def paginate[T = AssociationModel](limit: int = 100, offset: int = 0, values: Se
         number_of_pages=(len(values) + limit - 1) // limit
     )
     return values[offset:offset + limit], pagination_info
+
+
+def dataframe_to_json(df: pandas.DataFrame) -> str:
+    return json.dumps(df.to_json(orient='records'))
