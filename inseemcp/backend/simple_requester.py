@@ -83,6 +83,17 @@ class Requester:
         return initial_url
 
     async def __call__(self, search: SearchModel | MultiCriteriaSearchModel, url_param: str | None = None, testing: bool = False) -> dict | None:
+        """Sends a request to the INSEE API based on the search model and URL parameter.
+        
+        Args:
+            search (SearchModel | MultiCriteriaSearchModel): The search model containing the query parameters.
+            url_param (str | None): The URL parameter for single search. Required if single_search is True, otherwise ignored.
+            testing (bool): If True, returns the URL and headers without making the actual request.
+
+        Returns:
+            dict | None: The JSON response from the INSEE API, or None if an error occurred or if testing is True.
+        """
+
         api_key: str | None = os.environ.get('INSEE_API_KEY')
         headers = {
             'Accept': 'application/json',
@@ -141,6 +152,10 @@ def wild_card(key: BusinessColumnEnum, value: str | None = None, quote_value: bo
     """Returns a wildcard key-value paired query string formatted for the given key and optional value.
 
     .. code-block:: python
+        # Use value as None to indicate that the field should have a
+        # value:  denominationUniteLegale:* (should not be empty)
+        wild_card(BusinessColumnEnum.DENOMINATION_UNITE_LEGALE)
+
         # denominationUniteLegale:lecl*
         wild_card(BusinessColumnEnum.DENOMINATION_UNITE_LEGALE, "lecl")
     
@@ -172,7 +187,7 @@ def key_value_pair(key: str | BusinessColumnEnum, value: str | None = None, allo
     Args:
         key (str | BusinessColumnEnum): The key for the query.
         value (str | None): The value for the query. If None, only the key is used.
-        allow_none (bool): Whether to allow None values for the query.
+        allow_none (bool): Whether to ignore the value if it is None.
         quote_value (bool): Whether to quote the value in the query.
 
     Returns:

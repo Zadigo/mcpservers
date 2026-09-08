@@ -440,6 +440,7 @@ class BusinessColumnEnum(enum.Enum):
     DATE_DERNIER_TRAITEMENT_ETABLISSEMENT = "dateDernierTraitementEtablissement"
     DATE_DERNIER_TRAITEMENT_UNITE_LEGALE = "dateDernierTraitementUniteLegale"
     DENOMINATION_UNITE_LEGALE = "denominationUniteLegale"
+    DENOMINATION_USUELLE_UNITE_LEGALE = "denominationUsuelleUniteLegale"
     DENOMINATION_USUELLE1_UNITE_LEGALE = "denominationUsuelle1UniteLegale"
     DENOMINATION_USUELLE2_UNITE_LEGALE = "denominationUsuelle2UniteLegale"
     DENOMINATION_USUELLE3_UNITE_LEGALE = "denominationUsuelle3UniteLegale"

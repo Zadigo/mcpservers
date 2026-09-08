@@ -1,3 +1,5 @@
+from typing import Literal
+
 from fastmcp.tools import tool
 
 from backend.simple_requester import (
@@ -13,6 +15,9 @@ from backend.simple_requester import (
 from components.utils import select_response
 from models.base import BusinessColumnEnum
 
+type TypeState = Literal['all',  'active', 'ceased']
+
+type TypeLegalUnitCategory = Literal['all', 'MIC', 'PME', 'ETI', 'GE']
 
 @tool
 async def get_siren(siren: str, date: str | None = None):
@@ -54,61 +59,110 @@ async def get_siren(siren: str, date: str | None = None):
 
 
 @tool
-async def get_siren_startswith(siren: str, date: str | None = None):
+async def search_legal_units_by_siren_prefix(
+    siren_prefix: str,
+    active_state: TypeState = "all",
+    legal_unit_category: TypeLegalUnitCategory = "all",
+    code_naf: str | None = None,
+    date: str | None = None,
+    offset: int = 0,
+):
     """
-    Retrieve information about French legal units whose SIREN numbers start with the specified string
-    from the INSEE enterprise data.
+    Search the INSEE enterprise data for French legal units whose SIREN
+    starts with the specified prefix.
 
-    A SIREN is a unique 9-digit identifier assigned to a legal unit
-    (enterprise/company). It is different from a SIRET, which identifies
-    an individual establishment belonging to that legal unit.
+    A SIREN is a 9-digit identifier assigned to a legal unit. It is
+    different from a SIRET, which identifies an individual establishment
+    belonging to a legal unit.
+
+    Use this tool for prefix-based searches that may return multiple
+    legal units.
 
     Do not use this tool when:
-    - the user provides a SIRET and wants information about an establishment;
-    - the user wants to search for companies by name;
-    - the user wants to find multiple SIRENs;
-    - the user wants to find establishments belonging to a SIREN.
+    - the user provides a SIRET;
+    - the user wants to search legal units by name;
+    - the user wants information about one specific SIREN;
+    - the user wants to search for establishments or SIRETs.
 
-    Indicate to the user the amount of results returned by the API, if available. If
-    he wants to paginate to the next page of results or explore a partiular establishment
-    by extracting the information of the current enterprise/company in the current list
-    of establishments.
+    Because a short SIREN prefix can match a large number of legal units,
+    use the available filters to narrow the search when appropriate.
+
+    If the result set is large, use pagination and report the number of
+    results returned by the API when that information is available.
+    When appropriate, suggest narrowing the search using:
+    - a longer SIREN prefix;
+    - the legal unit's active state;
+    - the legal unit category;
+    - the NAF activity code.
 
     Args:
-        siren: The starting string of the SIREN numbers to search for.
-        date: Optional date used to retrieve the state of the legal unit
-            at a specific point in time. Use the date format expected by
-            the INSEE API (YYYY-MM-DD). If omitted, the current/latest
-            available information is returned.
+        siren_prefix:
+            The beginning of the SIREN to search for. This is a prefix,
+            not necessarily a complete 9-digit SIREN.
+
+        active_state:
+            Filter by the legal unit's active state. Defaults to "all".
+
+        legal_unit_category:
+            Filter by legal unit category. Defaults to "all".
+
+        code_naf:
+            Optional NAF activity code used to filter the legal units.
+
+        date:
+            Optional date used to retrieve information corresponding to
+            a specific point in time. The date must use the format
+            expected by the INSEE API (YYYY-MM-DD).
+
+        offset:
+            Number of matching results to skip before returning results.
+            Use this parameter to paginate through the result set.
+            Defaults to 0.
 
     Returns:
-        Information about the legal units whose SIREN numbers start with the specified string.
+        Matching French legal units, including their SIREN and the
+        information provided by the INSEE enterprise API.
 
     Raises:
-        ValueError: If the SIREN has an invalid format.
-        ...: If the INSEE API request fails.
+        ValueError:
+            If the SIREN prefix, date, or another parameter has an
+            invalid format.
+
+        ...:
+            If the INSEE API request fails.
     """
     instance = Requester(single_search=False, param='siren')
 
-    str_query = wild_card(BusinessColumnEnum.SIREN, siren)
-    query = MultiCriteriaSearchModel(q=str_query, date=date)
+    str_query = wild_card(BusinessColumnEnum.SIREN, siren_prefix)
+    and_query: list[str | None] = []
 
-    await instance(query, url_param=siren)
-    return select_response(instance)
+    _state: str | None = None
+    match active_state:
+        case 'active':
+            _state = 'A'
+            
+        case 'ceased':
+            _state = 'C'
+        case _:
+            pass
 
+    result = key_value_pair(BusinessColumnEnum.ETAT_ADMINISTRATIF_UNITE_LEGALE, _state, allow_none=True)
+    if result is not None:
+        and_query.append(condition_period(result))
 
-async def establishments_siren_not_start_by(siren: list[str]):
-    """
-    Search for establishments where the SIREN number does not start with the specified strings.
+    if legal_unit_category != 'all':
+        result = key_value_pair(BusinessColumnEnum.CATEGORIE_ENTREPRISE, legal_unit_category, allow_none=True)
+        if result is not None:
+            and_query.append(result)
 
-    Arguments:
-        siren (list[str]): The list of starting strings of the SIREN numbers to exclude.
-    """
-    instance = Requester(single_search=False, param='siren')
+    result = key_value_pair(BusinessColumnEnum.ACTIVITE_PRINCIPALE_NAF25_ETABLISSEMENT, code_naf, allow_none=True)
+    if result is not None:
+        and_query.append(result)
 
-    queries = [inversion(wild_card(BusinessColumnEnum.SIREN, s)) for s in siren]
-    query = MultiCriteriaSearchModel(q=join_operator('AND', *queries))
+    if and_query:
+        str_query = join_operator('AND', str_query, *and_query)
 
+    query = MultiCriteriaSearchModel(q=str_query, date=date, debut=offset)
     await instance(query)
     return select_response(instance)
 
@@ -135,10 +189,16 @@ async def get_legal_unit_name_startswith(name: str, date: str | None = None):
     """
     instance = Requester(single_search=False, param='siren')
 
-    query1 = wild_card(BusinessColumnEnum.NOM_UNITE_LEGALE, name)
-    query2 = wild_card(BusinessColumnEnum.NOM_USAGE_UNITE_LEGALE, name)
-        
-    query = MultiCriteriaSearchModel(q=join_operator('OR', query1, query2), date=date)
+    str_q1 = wild_card(BusinessColumnEnum.NOM_UNITE_LEGALE, name)
+    str_q2 = wild_card(BusinessColumnEnum.NOM_USAGE_UNITE_LEGALE, name)
+    str_q3 = wild_card(BusinessColumnEnum.DENOMINATION_UNITE_LEGALE, name)
+    str_q4 = wild_card(BusinessColumnEnum.DENOMINATION_USUELLE_UNITE_LEGALE, name)
+    str_q5 = wild_card(BusinessColumnEnum.DENOMINATION_USUELLE1_UNITE_LEGALE, name)
+    str_q6 = wild_card(BusinessColumnEnum.DENOMINATION_USUELLE2_UNITE_LEGALE, name)
+    str_q7 = wild_card(BusinessColumnEnum.DENOMINATION_USUELLE3_UNITE_LEGALE, name)
+
+    query = join_operator('OR', str_q1, str_q2, str_q3, str_q4, str_q5, str_q6, str_q7)
+    query = MultiCriteriaSearchModel(q=query, date=date)
 
     await instance(query)
     return select_response(instance)
@@ -158,7 +218,6 @@ async def get_legal_units_column_has_no_value(column_name: str):
 
 
 
-@tool
 async def legal_units_exact_search(column_name: str, value: str, count: int = 20, offset: int = 0):
     """
     Search for legal units that match the given column and value. Use this function for arbitrary
@@ -198,11 +257,9 @@ async def get_legal_units_by_name_and_location(name: str, postal_code: str | Non
     instance = Requester(single_search=False, param='siret')
 
     str_query1 = key_value_pair(BusinessColumnEnum.DENOMINATION_UNITE_LEGALE, name)
-    str_query2: str | None = None
-    if postal_code is not None:
-        str_query2 = key_value_pair(BusinessColumnEnum.CODE_POSTAL_ETABLISSEMENT, postal_code)
-
+    str_query2 = key_value_pair(BusinessColumnEnum.CODE_POSTAL_ETABLISSEMENT, value=postal_code, allow_none=True)
     str_query = join_operator('AND', str_query1, str_query2)
+
     await instance(MultiCriteriaSearchModel(q=str_query, debut=offset, nombre=count, date=date))
     return select_response(instance)
 
@@ -226,8 +283,8 @@ async def search_legal_units_by_address(street_name: str, postal_code: str | Non
 
     str_query1 = wild_card(BusinessColumnEnum.LIBELLE_VOIE_ETABLISSEMENT)
     str_query2 = wild_card(BusinessColumnEnum.LIBELLE_VOIE_ETABLISSEMENT, street_name, quote_value=True)
-    str_query3 = key_value_pair(BusinessColumnEnum.CODE_POSTAL_ETABLISSEMENT, postal_code)
-
+    str_query3 = key_value_pair(BusinessColumnEnum.CODE_POSTAL_ETABLISSEMENT, postal_code, allow_none=True)
     str_query = join_operator('AND', str_query1, str_query2, str_query3)
+
     await instance(MultiCriteriaSearchModel(q=str_query, debut=offset, nombre=count, date=date))
     return select_response(instance)

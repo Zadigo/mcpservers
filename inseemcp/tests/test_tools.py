@@ -5,36 +5,27 @@ from components.tools.establishments import (
     search_establishments_name_startswith,
 )
 from components.tools.legal_units import (
-    establishments_siren_not_start_by,
     get_legal_unit_name_startswith,
     get_legal_units_by_name_and_location,
-    get_siren_startswith,
-    legal_units_exact_search,
+    search_legal_units_by_siren_prefix,
 )
 from components.tools.university import get_university_by_siren, get_university_by_siret
-
-# class TestSearchLegalUnitsByActivityCodes:
-#     async def test_no_values(self):
-#         result = await search_entreprises_by_activity_codes()
-#         assert result is not None
-
-#     async def test_with_values(self):
-#         result = await search_entreprises_by_activity_codes(activity_codes=["84.23Z", "86.21Z"])
-#         assert result is not None
-
-#     async def test_with_values_and_condition(self):
-#         result = await search_entreprises_by_activity_codes(activity_codes=["84.23Z", "86.21Z"], inclusive=True)
-#         assert result is not None
 
 
 @pytest.mark.e2e
 class TestGetSirenStartsWith:
-    async def test_no_values(self):
-        result = await get_siren_startswith(siren="")
+    async def test_with_values(self):
+        result = await search_legal_units_by_siren_prefix(siren_prefix="3")
         assert result is not None
 
-    async def test_with_values(self):
-        result = await get_siren_startswith(siren="OpenAI")
+    async def test_all_params(self):
+        result = await search_legal_units_by_siren_prefix(
+            siren_prefix="3",
+            active_state="active",
+            legal_unit_category="MIC",
+            date="2024-01-01",
+            offset=0
+        )
         assert result is not None
 
 
@@ -46,17 +37,6 @@ class TestGetLegalUnitNameStartsWith:
 
 
 @pytest.mark.e2e
-class TestEstablishmentsSirenNotStartBy:
-    async def test_no_values(self):
-        result = await establishments_siren_not_start_by(siren=[])
-        assert result is not None
-
-    async def test_with_values(self):
-        result = await establishments_siren_not_start_by(siren=["1", "2"])
-        assert result is not None
-
-
-@pytest.mark.e2e
 class TestSearchEstablishmentsNameStartsWith:
     async def test_no_values(self):
         result = await search_establishments_name_startswith(name="")
@@ -64,17 +44,6 @@ class TestSearchEstablishmentsNameStartsWith:
 
     async def test_with_values(self):
         result = await search_establishments_name_startswith(name="Lecl")
-        assert result is not None
-
-
-@pytest.mark.e2e
-class TestLegalUnitsExactSearch:
-    async def test_no_values(self):
-        result = await legal_units_exact_search(column_name="", value="")
-        assert result is not None
-    
-    async def test_with_values(self):
-        result = await legal_units_exact_search(column_name ="NOM_UNITE_LEGALE", value="OpenAI")
         assert result is not None
 
 
