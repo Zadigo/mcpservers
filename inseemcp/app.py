@@ -1,18 +1,37 @@
+import os
 from contextlib import asynccontextmanager
 
 from fastmcp import FastMCP
 from fastmcp.resources import DirectoryResource
+from fastmcp.server.auth.providers.github import GitHubProvider
+from fastmcp.server.middleware.caching import ResponseCachingMiddleware
 from fastmcp.server.providers import FileSystemProvider, SkillsDirectoryProvider
+from key_value.aio.stores.redis import RedisStore
 from mcp_types import (
+    CompletionArgument,
     CompletionContext,
-    PromptArgument,
     PromptReference,
     ResourceTemplateReference,
 )
 from pydantic import AnyUrl
 
 from models.base import BusinessColumnEnum
+
+# from ui.university import ui_app
 from utils import BASE_DIR, logger
+
+auth = GitHubProvider(
+    client_id=os.environ["GITHUB_CLIENT_ID"],
+    client_secret=os.environ["GITHUB_CLIENT_SECRET"],
+    base_url="https://your-server.com",
+    jwt_signing_key=os.environ["JWT_SIGNING_KEY"],
+    client_storage=RedisStore(host="redis.example.com", port=6379)
+)
+
+middleware = ResponseCachingMiddleware(
+    cache_storage=RedisStore(host="localhost", port=6379)
+)
+
 
 INSTRUCTIONS: str = """
 You are business analyst assistant specializing in French business data. You have access to the INSEE database 
@@ -37,6 +56,7 @@ mcp = FastMCP(
     on_duplicate='ignore',
     strict_input_validation=False,
     providers=[
+        # ui_app,
         FileSystemProvider(BASE_DIR.joinpath('components'), reload=True)
     ]
 )
@@ -59,7 +79,7 @@ if BASE_DIR.joinpath('components', 'resources', 'data').is_dir():
 
 
 @mcp.completion
-async def complet(ref: PromptReference | ResourceTemplateReference, argument: PromptArgument, context: CompletionContext):
+async def completion(ref: PromptReference | ResourceTemplateReference, argument: CompletionArgument, context: CompletionContext | None = None):
     column_names = list(BusinessColumnEnum.__members__)
     
     if isinstance(ref, PromptReference):
@@ -68,7 +88,4 @@ async def complet(ref: PromptReference | ResourceTemplateReference, argument: Pr
         if ref.name in tool_names and argument.name == 'column_name':
             return sorted(column_names)
 
-        if argument.name == 'test':
-            pass
-
-    return None
+    return []

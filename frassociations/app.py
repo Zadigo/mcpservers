@@ -4,6 +4,10 @@ from fastmcp import FastMCP
 from fastmcp.resources import DirectoryResource
 from fastmcp.server.providers import FileSystemProvider, SkillsDirectoryProvider
 from mcp_types import CompletionContext, PromptArgument, PromptReference
+from mcp_types import (
+    CompletionArgument,
+    ResourceTemplateReference,
+)
 
 from utils import BASE_DIR, FilesQueryset, logger
 
@@ -12,12 +16,14 @@ You are business analyst assistant specializing in French associations. Your goa
 helpful business insights and analysis based on the datasets provided by the Répertoire National des Associations.
 """
 
+
 @asynccontextmanager
 async def lifespan(app: FastMCP):
     try:
         yield
     except Exception:
-        logger.critical('An error occurred during the lifespan of the MCP server.', exc_info=True)
+        logger.critical(
+            'An error occurred during the lifespan of the MCP server.', exc_info=True)
     finally:
         pass
 
@@ -31,10 +37,12 @@ mcp = FastMCP(
     ]
 )
 
-mcp.add_provider(SkillsDirectoryProvider(roots=BASE_DIR.joinpath(".claude", "skills")))
+mcp.add_provider(SkillsDirectoryProvider(
+    roots=BASE_DIR.joinpath(".claude", "skills")))
+
 
 @mcp.completion
-async def global_completion(ref: PromptReference, arguments: PromptArgument, context: CompletionContext):
+async def completion(ref: PromptReference | ResourceTemplateReference, argument: CompletionArgument, context: CompletionContext | None = None):
     instance = FilesQueryset()
     df = await instance.prefetch_files()
 
@@ -52,7 +60,7 @@ fullpath = BASE_DIR.joinpath('components', 'resources', 'data')
 if fullpath.is_dir():
     data_listing_resource = DirectoryResource(
         uri="resource://association-descriptions",
-        path=fullpath, # Path to the directory
+        path=fullpath,  # Path to the directory
         name="Association Descriptions",
         description="Files containing descriptions for the dataset.",
         recursive=False

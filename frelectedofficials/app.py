@@ -3,6 +3,7 @@ import logging
 import sys
 from contextlib import asynccontextmanager
 
+from fastmcp.resources.types import DirectoryResource
 from fastmcp.server import FastMCP
 from fastmcp.server.providers import FileSystemProvider
 from fastmcp.server.providers.skills import SkillsDirectoryProvider
@@ -81,7 +82,13 @@ def complete(ref: PromptReference, argument: PromptArgument, context: Completion
     return None
 
 
-# def create_app():    
-#     return mcp.http_app(path="/mcp")
 
-# app = create_app()
+resources_path = BASE_DIR.joinpath('resources', 'templates')
+if resources_path.exists():
+    registry = DirectoryResource(
+        title="Resources",
+        description="Directory containing resource templates",
+        path=resources_path
+    )
+
+    mcp.add_provider(registry)

@@ -1,12 +1,14 @@
+import datetime
+import secrets
 from abc import ABC
 from collections.abc import Sequence
 from typing import Any
 
 import httpx2
 import pandas
-from pydantic import BaseModel
 
 from backend.models import ResponseError
+from utils import DATA_DIR
 
 type TypeDataReturn[T = dict[str, Any]] = T | Sequence[T] | None
 
@@ -15,7 +17,6 @@ class BaseRequest(ABC):
     cache_key: str = 'inseemcp:{value}'
     error: ResponseError | None = None
     _cached_response: httpx2.Response | None = None
-    model: BaseModel | None = None
 
     def __init__(self) -> None:
         self.headers: dict[str, str] = {
@@ -71,3 +72,13 @@ class BaseRequest(ABC):
 
             self._cached_response = response
             return self.clean(self._cached_response.json())
+
+
+class FileDownloadMixin[T = Sequence[dict[str, Any]]]:
+    async def create_file(self, data: T):
+        filename = secrets.token_hex(16)
+        timestamp = datetime.datetime.now(tz=datetime.UTC).timestamp()
+        filepath = DATA_DIR.joinpath(f"lawyers__{filename}__{timestamp}")
+
+        df = pandas.DataFrame(data) # pyright: ignore[reportArgumentType]
+        df.to_parquet(filepath, index=False)

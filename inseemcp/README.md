@@ -20,6 +20,9 @@ fastmcp dev apps app.py
 
 # Start the inspector
 npx @modelcontextprotocol/inspector uv --directory /path/to/.venv/bin run fastmcp run /path/to/app.py:mcp
+
+# Start FastMCP Ui app
+fastmcp dev apps app.py
 ```
 
 ## Integration with LLMs

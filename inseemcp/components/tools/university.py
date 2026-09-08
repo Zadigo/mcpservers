@@ -120,8 +120,11 @@ async def get_university_by_siret(siret: str) -> list[UniversityModel]:
     """
     instance = UniversityRequest()
     await instance()
+
     if instance._cached_response is None:
         return []
+
     data = filter_data(instance, siret=siret)
     data = [item for item in data if siret in item.get("siret", [])]
+
     return [UniversityModel(**item) for item in data]
