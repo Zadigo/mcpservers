@@ -15,6 +15,7 @@ from mcp_types import (
 )
 from pydantic import AnyUrl
 
+from components.resources.constants import build_resources
 from models.base import BusinessColumnEnum
 
 # from ui.university import ui_app
@@ -64,18 +65,24 @@ mcp = FastMCP(
 mcp.add_provider(SkillsDirectoryProvider(roots=BASE_DIR.joinpath(".claude", "skills")))
 
 
-if BASE_DIR.joinpath('components', 'resources', 'data').is_dir():
-    fullpath = BASE_DIR.joinpath('components', 'resources', 'data')
+# File catalog
 
+static_dir = BASE_DIR.joinpath('components', 'resources', 'static')
+if static_dir.is_dir():
     static_resources = DirectoryResource(
-        uri=AnyUrl("resource://dataset-descriptions"),
-        path=fullpath,
-        name="Dataset Descriptions",
-        description="Contains descriptions of various datasets available for analysis.",
-        recursive=False
+        uri=AnyUrl("concepts://dataset/files"),
+        path=static_dir,
+        name="Dataset Documentation Files",
+        description="Lists the documentation files available in the dataset resources directory.",
+        recursive=True
     )
 
     mcp.add_resource(static_resources)
+
+
+# Build and add all predefined resources to the MCP application.
+
+build_resources(mcp)
 
 
 @mcp.completion

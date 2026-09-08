@@ -5,10 +5,12 @@ from pydantic import Field
 
 
 class AddressModel(pydantic.BaseModel):
-    complementAdresseEtablissement: str = Field(
+    complementAdresseEtablissement: str | None = Field(
+        default=None,
         description="Complément d'adresse de l'établissement"
     )
-    numeroVoieEtablissement: str = Field(
+    numeroVoieEtablissement: str | None = Field(
+        default=None,
         description="Numéro de voie de l'établissement"
     )
     indiceRepetitionEtablissement: str | None = Field(
@@ -23,13 +25,16 @@ class AddressModel(pydantic.BaseModel):
         default=None, 
         description="Indice de répétition du dernier numéro de voie de l'établissement"
     )
-    typeVoieEtablissement: str = Field(
+    typeVoieEtablissement: str | None = Field(
+        default=None,
         description="Type de voie de l'établissement"
     )
-    libelleVoieEtablissement: str = Field(
+    libelleVoieEtablissement: str | None = Field(
+        default=None,
         description="Libellé de la voie de l'établissement"
     )
-    codePostalEtablissement: str = Field(
+    codePostalEtablissement: str | None = Field(
+        default=None,
         description="Code postal de l'établissement"
     )
     libelleCommuneEtablissement: str | None = Field(
@@ -44,7 +49,8 @@ class AddressModel(pydantic.BaseModel):
         default=None,
         description="Distribution spéciale de l'établissement"
     )
-    codeCommuneEtablissement: str = Field(
+    codeCommuneEtablissement: str | None = Field(
+        default=None,
         description="Code commune de l'établissement"
     )
     codeCedexEtablissement: str | None = Field(
@@ -63,37 +69,97 @@ class AddressModel(pydantic.BaseModel):
         default=None,
         description="Libellé pays étranger de l'établissement"
     )
-    identifiantAdresseEtablissement: str = Field(
+    identifiantAdresseEtablissement: str | None = Field(
+        default=None,
         description="Identifiant de l'adresse de l'établissement"
     )
-    coordonneeLambertAbscisseEtablissement: str = Field(
+    coordonneeLambertAbscisseEtablissement: str | None = Field(
+        default=None,
         description="Coordonnée Lambert abscisse de l'établissement"
     )
-    coordonneeLambertOrdonneeEtablissement: str = Field(
+    coordonneeLambertOrdonneeEtablissement: str | None = Field(
+        default=None,
         description="Coordonnée Lambert ordonnée de l'établissement"
     )
 
 
 class Address2Model(pydantic.BaseModel):
-    complementAdresse2Etablissement: str | None = Field(default=None, description="Complément d'adresse de l'établissement")
-    numeroVoie2Etablissement: str | None = Field(default=None, description="Numéro de voie de l'établissement")
-    indiceRepetition2Etablissement: str | None = Field(default=None, description="Indice de répétition de l'établissement")
-    dernierNumeroVoie2Etablissement: str | None = Field(default=None, description="Dernier numéro de voie de l'établissement")
-    indiceRepetitionDernierNumeroVoie2Etablissement: str | None = Field(default=None, description="Indice de répétition du dernier numéro de voie de l'établissement")
-    typeVoie2Etablissement: str | None = Field(default=None, description="Type de voie de l'établissement")
-    libelleVoie2Etablissement: str | None = Field(default=None, description="Libellé de la voie de l'établissement")
-    codePostal2Etablissement: str | None = Field(default=None, description="Code postal de l'établissement")
-    libelleCommune2Etablissement: str | None = Field(default=None, description="Libellé de la commune de l'établissement")
-    libelleCommuneEtranger2Etablissement: str | None = Field(default=None, description="Libellé de la commune étrangère de l'établissement")
-    distributionSpeciale2Etablissement: str | None = Field(default=None, description="Distribution spéciale de l'établissement")
-    codeCommune2Etablissement: str | None = Field(default=None, description="Code commune de l'établissement")
-    codeCedex2Etablissement: str | None = Field(default=None, description="Code CEDEX de l'établissement")
-    libelleCedex2Etablissement: str | None = Field(default=None, description="Libellé CEDEX de l'établissement")
-    codePaysEtranger2Etablissement: str | None = Field(default=None, description="Code pays étranger de l'établissement")
-    libellePaysEtranger2Etablissement: str | None = Field(default=None, description="Libellé pays étranger de l'établissement")
-    identifiantAdresse2Etablissement: str | None = Field(default=None, description="Identifiant de l'adresse de l'établissement")
-    coordonneeLambertAbscisse2Etablissement: str | None = Field(default=None, description="Coordonnée Lambert abscisse de l'établissement")
-    coordonneeLambertOrdonnee2Etablissement: str | None = Field(default=None, description="Coordonnée Lambert ordonnée de l'établissement")
+    complementAdresse2Etablissement: str | None = Field(
+        default=None,
+        description="Complément d'adresse de l'établissement"
+    )
+    numeroVoie2Etablissement: str | None = Field(
+        default=None,
+        description="Numéro de voie de l'établissement"
+    )
+    indiceRepetition2Etablissement: str | None = Field(
+        default=None,
+        description="Indice de répétition de l'établissement"
+    )
+    dernierNumeroVoie2Etablissement: str | None = Field(
+        default=None,
+        description="Dernier numéro de voie de l'établissement"
+    )
+    indiceRepetitionDernierNumeroVoie2Etablissement: str | None = Field(
+        default=None,
+        description="Indice de répétition du dernier numéro de voie de l'établissement"
+    )
+    typeVoie2Etablissement: str | None = Field(
+        default=None,
+        description="Type de voie de l'établissement"
+    )
+    libelleVoie2Etablissement: str | None = Field(
+        default=None,
+        description="Libellé de la voie de l'établissement"
+    )
+    codePostal2Etablissement: str | None = Field(
+        default=None,
+        description="Code postal de l'établissement"
+    )
+    libelleCommune2Etablissement: str | None = Field(
+        default=None,
+        description="Libellé de la commune de l'établissement"
+    )
+    libelleCommuneEtranger2Etablissement: str | None = Field(
+        default=None,
+        description="Libellé de la commune étrangère de l'établissement"
+    )
+    distributionSpeciale2Etablissement: str | None = Field(
+        default=None,
+        description="Distribution spéciale de l'établissement"
+    )
+    codeCommune2Etablissement: str | None = Field(
+        default=None,
+        description="Code commune de l'établissement"
+    )
+    codeCedex2Etablissement: str | None = Field(
+        default=None,
+        description="Code CEDEX de l'établissement"
+    )
+    libelleCedex2Etablissement: str | None = Field(
+        default=None,
+        description="Libellé CEDEX de l'établissement"
+    )
+    codePaysEtranger2Etablissement: str | None = Field(
+        default=None,
+        description="Code pays étranger de l'établissement"
+    )
+    libellePaysEtranger2Etablissement: str | None = Field(
+        default=None,
+        description="Libellé pays étranger de l'établissement"
+    )
+    identifiantAdresse2Etablissement: str | None = Field(
+        default=None,
+        description="Identifiant de l'adresse de l'établissement"
+    )
+    coordonneeLambertAbscisse2Etablissement: str | None = Field(
+        default=None,
+        description="Coordonnée Lambert abscisse de l'établissement"
+    )
+    coordonneeLambertOrdonnee2Etablissement: str | None = Field(
+        default=None,
+        description="Coordonnée Lambert ordonnée de l'établissement"
+    )
 
 
 
@@ -101,118 +167,94 @@ class LegalUnitModel(pydantic.BaseModel):
     etatAdministratifUniteLegale: str = Field(
         description="Administrative status of the legal unit"
     )
-
     statutDiffusionUniteLegale: str = Field(
         description="Indicates if the legal unit is public or if its dissemination is restricted. One of 'O' (Open) or 'P' (Restricted or partially restricted)"
     )
-
     dateCreationUniteLegale: str = Field(
         description="Date on which the legal unit was created"
     )
-
     categorieJuridiqueUniteLegale: str = Field(
         description="Legal category of the legal unit"
     )
-
     denominationUniteLegale: str = Field(
         description="Legal unit's legal name"
     )
-
     sigleUniteLegale: str | None = Field(
         default=None,
         description="Acronym of the legal unit"
     )
-
     denominationUsuelle1UniteLegale: str | None = Field(
         default=None, 
         description="First usual name of the legal unit"
     )
-
     denominationUsuelle2UniteLegale: str | None = Field(
         default=None, 
         description="Second usual name of the legal unit"
     )
-
     denominationUsuelle3UniteLegale: str | None = Field(
         default=None, 
         description="Third usual name of the legal unit"
     )
-
     sexeUniteLegale: str | None = Field(
         default=None, 
         description="Sex of the legal unit"
     )
-
     nomUniteLegale: str | None = Field(
         default=None, 
         description="Surname of the legal unit"
     )
-
     nomUsageUniteLegale: str | None = Field(
         default=None, 
         description="Usual surname of the legal unit"
     )
-
     prenom1UniteLegale: str | None = Field(
         default=None, 
         description="First given name of the legal unit"
     )
-
     prenom2UniteLegale: str | None = Field(
         default=None, 
         description="Second given name of the legal unit"
     )
-
     prenom3UniteLegale: str | None = Field(
         default=None, 
         description="Third given name of the legal unit"
     )
-
     prenom4UniteLegale: str | None = Field(
         default=None, 
         description="Fourth given name of the legal unit"
     )
-
     prenomUsuelUniteLegale: str | None = Field(
         default=None, 
         description="Usual given name of the legal unit"
     )
-
     pseudonymeUniteLegale: str | None = Field(
         default=None, 
         description="Pseudonym of the legal unit"
     )
-
     activitePrincipaleUniteLegale: str | None = Field(
         default=None, 
         description="Main activity of the legal unit"
     )
-
     nomenclatureActivitePrincipaleUniteLegale: str | None = Field(
         default=None, 
         description="Classification used for the legal unit's main activity"
     )
-
     identifiantAssociationUniteLegale: str | None = Field(
         default=None, 
         description="Association identifier of the legal unit"
     )
-
     economieSocialeSolidaireUniteLegale: str | None = Field(
         default=None, 
         description="Social and solidarity economy status of the legal unit"
     )
-
     societeMissionUniteLegale: str | None = Field(
         default=None, 
         description="Mission-driven company status of the legal unit"
     )
-
     caractereEmployeurUniteLegale: str | None = Field(
         default=None, 
         description="Employer status of the legal unit"
     )
-
     trancheEffectifsUniteLegale: str = Field(
         description="Employee count range of the legal unit"
     )
@@ -220,23 +262,18 @@ class LegalUnitModel(pydantic.BaseModel):
     anneeEffectifsUniteLegale: str = Field(
         description="Year to which the legal unit's employee count relates"
     )
-
     nicSiegeUniteLegale: str = Field(
         description="NIC identifying the legal unit's head-office establishment"
     )
-
     dateDernierTraitementUniteLegale: str = Field(
         description="Date of the last processing of the legal unit's data"
     )
-
     categorieEntreprise: str = Field(
         description="Enterprise category"
     )
-
     anneeCategorieEntreprise: str = Field(
         description="Year of the enterprise category"
     )
-
     activitePrincipaleNAF25UniteLegale: str = Field(
         description="Main activity of the legal unit according to NAF 2025"
     )
@@ -247,69 +284,55 @@ class LegalUnitPeriodModel(pydantic.BaseModel):
         default=None,
         description="End date of the legal unit period",
     )
-
     dateDebut: str = Field(
         description="Start date of the legal unit period",
     )
-
     etatAdministratifEtablissement: str = Field(
-        description="Administrative status of the establishment",
+        description="Indicates whether a business or legal unit is active or ceased: 'A' for active, 'C' for ceased",
     )
-
     changementEtatAdministratifEtablissement: bool = Field(
         default=False,
         description="Indicates whether the administrative status of the establishment has changed",
     )
-
     enseigne1Etablissement: str = Field(
         description="Primary trading name of the establishment",
     )
-
     enseigne2Etablissement: str | None = Field(
         default=None,
         description="Secondary trading name of the establishment",
     )
-
     enseigne3Etablissement: str | None = Field(
         default=None,
         description="Third trading name of the establishment",
     )
-
     changementEnseigneEtablissement: bool = Field(
         default=False,
         description="Indicates whether the trading name of the establishment has changed",
     )
-
     denominationUsuelleEtablissement: str | None = Field(
         default=None,
         description="Usual name of the establishment",
     )
-
     changementDenominationUsuelleEtablissement: bool = Field(
         default=False,
         description="Indicates whether the usual name of the establishment has changed",
     )
-
     activitePrincipaleEtablissement: str | None = Field(
         default=None,
         description="Main activity of the establishment",
     )
-
     nomenclatureActivitePrincipaleEtablissement: str | None = Field(
         default=None,
         description="Classification used for the establishment's main activity",
     )
-
     changementActivitePrincipaleEtablissement: bool = Field(
         default=False,
         description="Indicates whether the main activity of the establishment has changed",
     )
-
     caractereEmployeurEtablissement: str | None = Field(
         default=None,
         description="Employer status of the establishment",
     )
-
     changementCaractereEmployeurEtablissement: bool = Field(
         default=False,
         description="Indicates whether the employer status of the establishment has changed",
@@ -319,65 +342,50 @@ class EstablishmentModel(pydantic.BaseModel):
     siren: str = Field(
         description="SIREN of the legal unit to which the establishment belongs"
     )
-
     nic: str = Field(
         description="NIC identifying the establishment"
     )
-
     siret: str = Field(
         description="SIRET identifying the establishment"
     )
-
     statutDiffusionEtablissement: str = Field(
-        description="Indicates if the establishment is public or if its dissemination is restricted. One of 'O' (Open) or 'P' (Restricted or partially restricted)"
+        description="Indicates if the establishment is public or if its dissemination is restricted: 'O' (Open) or 'P' (Restricted or partially restricted)"
     )
-
     dateCreationEtablissement: str = Field(
         description="Date on which the establishment was created"
     )
-
     trancheEffectifsEtablissement: str = Field(
         description="Employee count range of the establishment"
     )
-
     anneeEffectifsEtablissement: str | None = Field(
         default=None,
         description="Year to which the establishment's employee count relates"
     )
-
     activitePrincipaleEtablissement: str | None = Field(
         default=None,
         description="Main activity of the establishment"
     )
-
     dateDernierTraitementEtablissement: str = Field(
         description="Date of the last processing of the establishment's data"
     )
-
     etablissementSiege: bool = Field(
         description="Indicates whether the establishment is the head office"
     )
-
     nombrePeriodesEtablissement: int = Field(
         description="Number of periods recorded for the establishment"
     )
-
     activitePrincipaleNAF25Etablissement: str = Field(
         description="Main activity of the establishment according to NAF 2025"
     )
-
     uniteLegale: LegalUnitModel = Field(
         description="Legal unit to which the establishment belongs"
     )
-
     adresseEtablissement: AddressModel = Field(
         description="Address of the establishment"
     )
-
     adresse2Etablissement: Address2Model = Field(
         description="Secondary address of the establishment"
     )
-
     periodesEtablissement: list[LegalUnitPeriodModel] = Field(
         description="List of periods recorded for the establishment"
     )
@@ -437,6 +445,7 @@ class BusinessColumnEnum(enum.Enum):
     DENOMINATION_USUELLE3_UNITE_LEGALE = "denominationUsuelle3UniteLegale"
     ECONOMIE_SOCIALE_SOLIDAIRE_UNITE_LEGALE = "economieSocialeSolidaireUniteLegale"
     ETABLISSEMENT_SIEGE = "etablissementSiege"
+    ETAT_ADMINISTRATIF_ETABLISSEMENT = "etatAdministratifEtablissement"
     ETAT_ADMINISTRATIF_UNITE_LEGALE = "etatAdministratifUniteLegale"
     IDENTIFIANT_ASSOCIATION_UNITE_LEGALE = "identifiantAssociationUniteLegale"
     LIBELLE_VOIE_ETABLISSEMENT = "libelleVoieEtablissement"

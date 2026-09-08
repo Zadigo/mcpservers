@@ -177,6 +177,8 @@ async def search_establishments_by_code_naf(code_naf: str, postal_code: str | No
     business activity of a legal unit. For example "62.01Z" represents computer 
     programming activities.
 
+    INSEE assigns each French commune a 5-character code (generally 2 digits for the department and 3 digits for the commune).
+
     When to use this tool:
         - Use this tool when you need to find establishments based on their primary business activity.
         - The tool can be combined with postal code filtering to narrow down results geographically.
