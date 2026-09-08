@@ -12,7 +12,6 @@ from backend.simple_requester import (
     MultiCriteriaSearchModel,
     Requester,
     SearchModel,
-    inversion,
     join_operator,
     key_value_pair,
     wild_card,
@@ -23,102 +22,17 @@ from utils import get_redis
 
 
 @tool
-async def get_siren(siren: str, date: str | None = None):
+async def get_siret(siret: str, date: str | None = None):
     """
-    Retrieve information about a specific French legal unit using its
-    SIREN number from the INSEE enterprise data.
-
-    A SIREN is a unique 9-digit identifier assigned to a legal unit
-    (enterprise/company). It is different from a SIRET, which identifies
-    an individual establishment belonging to that legal unit.
-
-    Do not use this tool when:
-    - the user provides a SIRET and wants information about an establishment;
-    - the user wants to search for companies by name;
-    - the user wants to find multiple SIRENs;
-    - the user wants to find establishments belonging to a SIREN.
-
-    Args:
-        siren: The 9-digit SIREN number identifying the legal unit to
-            retrieve. The value should contain exactly 9 digits.
-
-        date: Optional date used to retrieve the state of the legal unit
-            at a specific point in time. Use the date format expected by
-            the INSEE API (YYYY-MM-DD). If omitted, the current/latest
-            available information is returned.
-
-    Returns:
-        Information about the legal unit corresponding to the SIREN.
-        If no legal unit exists for the supplied SIREN, the tool returns
-        the corresponding INSEE API result rather than inventing data.
-
-    Raises:
-        ValueError: If the SIREN or date has an invalid format.
-        ...: If the INSEE API request fails.
-    """
-    instance = Requester(single_search=True)
-    await instance(SearchModel(date=date), url_param=siren)
-    return select_response(instance)
-
-
-
-@tool
-async def get_siren_startswith(siren: str):
-    """
-    Retrieve information about French legal units whose SIREN numbers start with the specified string
-    from the INSEE enterprise data.
-
-    A SIREN is a unique 9-digit identifier assigned to a legal unit
-    (enterprise/company). It is different from a SIRET, which identifies
-    an individual establishment belonging to that legal unit.
-
-    Do not use this tool when:
-    - the user provides a SIRET and wants information about an establishment;
-    - the user wants to search for companies by name;
-    - the user wants to find multiple SIRENs;
-    - the user wants to find establishments belonging to a SIREN.
-
-    Indicate to the user the amount of results returned by the API, if available. If
-    he wants to paginate to the next page of results or explore a partiular establishment
-    by extracting the information of the current enterprise/company in the current list
-    of establishments.
-
-    Args:
-        siren: The starting string of the SIREN numbers to search for.
-
-    Returns:
-        Information about the legal units whose SIREN numbers start with the specified string.
-
-    Raises:
-        ValueError: If the SIREN has an invalid format.
-        ...: If the INSEE API request fails.
-    """
-    instance = Requester(single_search=False, param='siren')
-
-    str_query = wild_card(BusinessColumnEnum.SIREN, siren)
-    query = MultiCriteriaSearchModel(q=str_query)
-
-    await instance(query, url_param=siren)
-    return select_response(instance)
-
-
-
-@tool
-async def establishments_siren_not_start_by(siren: list[str]):
-    """
-    Search for establishments where the SIREN number does not start with the specified strings.
+    Search for a single SIRET number.
 
     Arguments:
-        siren (list[str]): The list of starting strings of the SIREN numbers to exclude.
+        siret (str): The SIRET number to search for.
+        date (str | None): The date of the SIRET number to search for.
     """
-    instance = Requester(single_search=False, param='siren')
-
-    queries = [inversion(wild_card(BusinessColumnEnum.SIREN, s)) for s in siren]
-    query = MultiCriteriaSearchModel(q=join_operator('AND', *queries))
-
-    await instance(query)
+    instance = Requester(single_search=True, param='siret')
+    await instance(SearchModel(date=date), url_param=siret)
     return select_response(instance)
-
 
 
 @tool

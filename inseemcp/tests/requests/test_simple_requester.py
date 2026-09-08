@@ -1,6 +1,14 @@
 import pytest
 
-from backend.simple_requester import MultiCriteriaSearchModel, SearchModel
+from backend.simple_requester import (
+    MultiCriteriaSearchModel,
+    SearchModel,
+    condition_and,
+    condition_or,
+    condition_period,
+    condition_to,
+)
+from models.base import BusinessColumnEnum
 
 
 @pytest.mark.e2e
@@ -19,3 +27,19 @@ async def test_single_search(api_request):
 async def test_simple_requester(api_request, mocked_request):
     response = await api_request(SearchModel())
     assert response is not None
+
+
+def test_condition_period():
+    assert condition_period("someYear:2025") == "periode(someYear:2025)"
+
+
+def test_condition_to():
+    assert condition_to("someYear:2025", "someYear:2026") == "[someYear:2025 TO someYear:2026]"
+
+
+def test_condition_or():
+    assert condition_or(BusinessColumnEnum.DENOMINATION_UNITE_LEGALE, "value1", "value2") == "denominationUniteLegale:value1 OR denominationUniteLegale:value2"
+
+
+def test_condition_and():
+    assert condition_and(BusinessColumnEnum.DENOMINATION_UNITE_LEGALE, "value1", "value2") == "denominationUniteLegale:value1 AND denominationUniteLegale:value2"
