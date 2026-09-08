@@ -1,9 +1,9 @@
-import os
 from contextlib import asynccontextmanager
 
 from fastmcp import FastMCP
 from fastmcp.resources import DirectoryResource
-from fastmcp.server.auth.providers.github import GitHubProvider
+
+# from fastmcp.server.auth.providers.github import GitHubProvider
 from fastmcp.server.middleware.caching import ResponseCachingMiddleware
 from fastmcp.server.providers import FileSystemProvider, SkillsDirectoryProvider
 from key_value.aio.stores.redis import RedisStore
@@ -20,13 +20,13 @@ from models.base import BusinessColumnEnum
 # from ui.university import ui_app
 from utils import BASE_DIR, logger
 
-auth = GitHubProvider(
-    client_id=os.environ["GITHUB_CLIENT_ID"],
-    client_secret=os.environ["GITHUB_CLIENT_SECRET"],
-    base_url="https://your-server.com",
-    jwt_signing_key=os.environ["JWT_SIGNING_KEY"],
-    client_storage=RedisStore(host="redis.example.com", port=6379)
-)
+# auth = GitHubProvider(
+#     client_id=os.environ["GITHUB_CLIENT_ID"],
+#     client_secret=os.environ["GITHUB_CLIENT_SECRET"],
+#     base_url="https://your-server.com",
+#     jwt_signing_key=os.environ["JWT_SIGNING_KEY"],
+#     client_storage=RedisStore(host="redis.example.com", port=6379)
+# )
 
 middleware = ResponseCachingMiddleware(
     cache_storage=RedisStore(host="localhost", port=6379)

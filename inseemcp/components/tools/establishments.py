@@ -165,6 +165,49 @@ async def search_establishments_name_startswith(name: str, postal_code: str | No
     return select_response(instance)
 
 
+@tool
+async def search_establishments_by_code_naf(code_naf: str, postal_code: str | None = None, offset: int = 0):
+    """
+    Search INSEE enterprise data for establishments associated with a specific NAF code.
+
+    A NAF code (Nomenclature d'Activités Française) represents the primary business activity of 
+    a legal unit. This tool allows users to find establishments based on their associated NAF code.
+
+    The NAF code is a 6-character alphanumeric code that classifies the primary 
+    business activity of a legal unit. For example "62.01Z" represents computer 
+    programming activities.
+
+    When to use this tool:
+        - Use this tool when you need to find establishments based on their primary business activity.
+        - The tool can be combined with postal code filtering to narrow down results geographically.
+
+    How to use this tool:
+        - Always ensure that the user provides a full NAF code (not a partial code).
+        - The postal code can be a partial code (e.g. 59, 75, etc.) or a complete code (e.g. 59000, 75001, etc.).
+
+    Args:
+        code_naf: The NAF code to search for.
+        postal_code: Optional postal code to filter the establishments by.
+        offset: The starting point for pagination.
+
+    Returns:
+        A collection of matching establishment records. Each result may
+        contain establishment and legal-unit information returned by the
+        INSEE API.
+    """
+    instance = Requester(single_search=False, param='siret')
+
+    str_query = key_value_pair(BusinessColumnEnum.ACTIVITE_PRINCIPALE_NAF25_ETABLISSEMENT, code_naf, quote_value=True)
+
+    if postal_code is not None:
+        str_query = join_operator('AND', str_query, wild_card(BusinessColumnEnum.CODE_POSTAL_ETABLISSEMENT, postal_code))
+
+    query = MultiCriteriaSearchModel(q=str_query, debut=offset, nombre=20)
+
+    await instance(query)
+    return select_response(instance)
+
+
 async def paginate_establishments(siren: str):
     """
     Paginate through establishments associated with a specific SIREN number.

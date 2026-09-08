@@ -1,29 +1,78 @@
 import enum
+from warnings import deprecated
 
 import pydantic
 from pydantic import Field
 
 
 class AddressModel(pydantic.BaseModel):
-    complementAdresseEtablissement: str = Field(description="Complément d'adresse de l'établissement")
-    numeroVoieEtablissement: str = Field(description="Numéro de voie de l'établissement")
-    indiceRepetitionEtablissement: str | None = Field(default=None, description="Indice de répétition de l'établissement")
-    dernierNumeroVoieEtablissement: str | None = Field(default=None, description="Dernier numéro de voie de l'établissement")
-    indiceRepetitionDernierNumeroVoieEtablissement: str | None = Field(default=None, description="Indice de répétition du dernier numéro de voie de l'établissement")
-    typeVoieEtablissement: str = Field(description="Type de voie de l'établissement")
-    libelleVoieEtablissement: str = Field(description="Libellé de la voie de l'établissement")
-    codePostalEtablissement: str = Field(description="Code postal de l'établissement")
-    libelleCommuneEtablissement: str | None = Field(default=None, description="Libellé de la commune de l'établissement")
-    libelleCommuneEtrangerEtablissement: str | None = Field(default=None, description="Libellé de la commune étrangère de l'établissement")
-    distributionSpecialeEtablissement: str | None = Field(default=None, description="Distribution spéciale de l'établissement")
-    codeCommuneEtablissement: str = Field(description="Code commune de l'établissement")
-    codeCedexEtablissement: str | None = Field(default=None, description="Code CEDEX de l'établissement")
-    libelleCedexEtablissement: str | None = Field(default=None, description="Libellé CEDEX de l'établissement")
-    codePaysEtrangerEtablissement: str | None = Field(default=None, description="Code pays étranger de l'établissement")
-    libellePaysEtrangerEtablissement: str | None = Field(default=None, description="Libellé pays étranger de l'établissement")
-    identifiantAdresseEtablissement: str = Field(description="Identifiant de l'adresse de l'établissement")
-    coordonneeLambertAbscisseEtablissement: str = Field(description="Coordonnée Lambert abscisse de l'établissement")
-    coordonneeLambertOrdonneeEtablissement: str = Field(description="Coordonnée Lambert ordonnée de l'établissement")
+    complementAdresseEtablissement: str = Field(
+        description="Complément d'adresse de l'établissement"
+    )
+    numeroVoieEtablissement: str = Field(
+        description="Numéro de voie de l'établissement"
+    )
+    indiceRepetitionEtablissement: str | None = Field(
+        default=None,
+        description="Indice de répétition de l'établissement"
+    )
+    dernierNumeroVoieEtablissement: str | None = Field(
+        default=None,
+        description="Dernier numéro de voie de l'établissement"
+    )
+    indiceRepetitionDernierNumeroVoieEtablissement: str | None = Field(
+        default=None, 
+        description="Indice de répétition du dernier numéro de voie de l'établissement"
+    )
+    typeVoieEtablissement: str = Field(
+        description="Type de voie de l'établissement"
+    )
+    libelleVoieEtablissement: str = Field(
+        description="Libellé de la voie de l'établissement"
+    )
+    codePostalEtablissement: str = Field(
+        description="Code postal de l'établissement"
+    )
+    libelleCommuneEtablissement: str | None = Field(
+        default=None,
+        description="Libellé de la commune de l'établissement"
+    )
+    libelleCommuneEtrangerEtablissement: str | None = Field(
+        default=None,
+        description="Libellé de la commune étrangère de l'établissement"
+    )
+    distributionSpecialeEtablissement: str | None = Field(
+        default=None,
+        description="Distribution spéciale de l'établissement"
+    )
+    codeCommuneEtablissement: str = Field(
+        description="Code commune de l'établissement"
+    )
+    codeCedexEtablissement: str | None = Field(
+        default=None,
+        description="Code CEDEX de l'établissement"
+    )
+    libelleCedexEtablissement: str | None = Field(
+        default=None,
+        description="Libellé CEDEX de l'établissement"
+    )
+    codePaysEtrangerEtablissement: str | None = Field(
+        default=None,
+        description="Code pays étranger de l'établissement"
+    )
+    libellePaysEtrangerEtablissement: str | None = Field(
+        default=None,
+        description="Libellé pays étranger de l'établissement"
+    )
+    identifiantAdresseEtablissement: str = Field(
+        description="Identifiant de l'adresse de l'établissement"
+    )
+    coordonneeLambertAbscisseEtablissement: str = Field(
+        description="Coordonnée Lambert abscisse de l'établissement"
+    )
+    coordonneeLambertOrdonneeEtablissement: str = Field(
+        description="Coordonnée Lambert ordonnée de l'établissement"
+    )
 
 
 class Address2Model(pydantic.BaseModel):
@@ -55,7 +104,7 @@ class LegalUnitModel(pydantic.BaseModel):
     )
 
     statutDiffusionUniteLegale: str = Field(
-        description="Dissemination status of the legal unit"
+        description="Indicates if the legal unit is public or if its dissemination is restricted. One of 'O' (Open) or 'P' (Restricted or partially restricted)"
     )
 
     dateCreationUniteLegale: str = Field(
@@ -281,7 +330,7 @@ class EstablishmentModel(pydantic.BaseModel):
     )
 
     statutDiffusionEtablissement: str = Field(
-        description="Establishment's dissemination status"
+        description="Indicates if the establishment is public or if its dissemination is restricted. One of 'O' (Open) or 'P' (Restricted or partially restricted)"
     )
 
     dateCreationEtablissement: str = Field(
@@ -336,11 +385,24 @@ class EstablishmentModel(pydantic.BaseModel):
 
 
 class HeaderModel(pydantic.BaseModel):
-    statut: int = Field(description="Statut of the response")
-    message: str = Field(description="Message of the response")
-    total: int = Field(description="Total number of results")
-    debut: int = Field(description="Starting index of the results")
-    nombre: int = Field(description="Number of results returned in the response")
+    statut: int = Field(
+        description="Statut of the response"
+    )
+    message: str = Field(
+        description="Message of the response"
+    )
+    total: int = Field(
+        default=0,
+        description="Total number of results"
+    )
+    debut: int = Field(
+        default=0,
+        description="Starting index of the results"
+    )
+    nombre: int = Field(
+        default=0,
+        description="Number of results returned in the response"
+    )
 
 
 class BaseResponseModel(pydantic.BaseModel):
@@ -348,6 +410,7 @@ class BaseResponseModel(pydantic.BaseModel):
     etablissements: list[EstablishmentModel] = Field(description="List of etablissements data")
 
 
+@deprecated("Use BusinessColumnEnum instead")
 class EstablishmentEnum(enum.Enum):
     SIREN = "siren"
     NIC = "nic"
@@ -367,6 +430,7 @@ class EstablishmentEnum(enum.Enum):
     PERIODES_ETABLISSEMENT = "periodesEtablissement"
 
 
+@deprecated("Use BusinessColumnEnum instead")
 class LegalUnitEnum(enum.Enum):
     ETAT_ADMINISTRATIF_UNITE_LEGALE = "etatAdministratifUniteLegale"
     STATUT_DIFFUSION_UNITE_LEGALE = "statutDiffusionUniteLegale"
