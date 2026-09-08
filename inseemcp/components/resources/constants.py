@@ -65,7 +65,7 @@ RESOURCE_DEFINITIONS: list[dict[str, Any]] = [
             "Rules for exact, prefix, wildcard and multi-result searches."
         ),
         "category": "search",
-    },
+    }
 ]
 
 

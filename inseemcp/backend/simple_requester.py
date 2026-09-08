@@ -167,6 +167,13 @@ def wild_card(key: BusinessColumnEnum, value: str | None = None, quote_value: bo
     Returns:
         str: The formatted wildcard query string.
     """
+    if value is not None:
+        if value.startswith('period'):
+            raise ValueError("Wildcard value cannot start with 'period'")
+
+        if 'AND' in value or 'OR' in value:
+            raise ValueError("Wildcard value cannot contain 'AND' or 'OR'")
+
     result = key_value_pair(key.value, value, quote_value=quote_value)
     if result is not None:
         result = result.removesuffix('*')

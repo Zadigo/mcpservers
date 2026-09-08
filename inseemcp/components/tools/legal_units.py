@@ -84,14 +84,23 @@ async def search_legal_units_by_siren_prefix(
     - the user wants information about one specific SIREN;
     - the user wants to search for establishments or SIRETs.
 
-    Because a short SIREN prefix can match a large number of legal units,
-    use the available filters to narrow the search when appropriate.
+    Pagination:
+    - The API returns pagination metadata including the total number of
+    matching results, the current offset, and the number of results returned.
+    - Do not retrieve every matching result automatically when the total
+    result count is large.
+    - Present the current page and report the total number of matches.
+    - If the user requests additional results, use the `offset` parameter
+    to retrieve the next page.
+    - When the result set is very large, suggest narrowing the search with
+    a more specific SIREN prefix or one of the available filters.
 
-    If the result set is large, use pagination and report the number of
-    results returned by the API when that information is available.
-    When appropriate, suggest narrowing the search using:
+    When results are paginated, clearly distinguish the total number of
+    matching legal units from the number returned in the current response.
+
+    If the result set is large, suggest narrowing the search using:
     - a longer SIREN prefix;
-    - the legal unit's active state;
+    - the active state;
     - the legal unit category;
     - the NAF activity code.
 
@@ -168,36 +177,73 @@ async def search_legal_units_by_siren_prefix(
 
 
 @tool
-async def get_legal_unit_name_startswith(name: str, date: str | None = None):
+async def search_legal_units_by_name_prefix(name: str, exact_search: bool = False, date: str | None = None):
     """
-    Search for all legal units where the legal unit's name starts with the specified string.
-    This function performs a wildcard search on the columns `nomUniteLegale` and `nomUsageUniteLegale`.
-    Refer to the `etablissement.md` resource documentation for more details on the column types and
-    definitions.
+    Search the INSEE enterprise data for French legal units whose name
+    starts with the specified prefix.
 
-    Notes:
-        - The search is performed against the legal-unit name columns, not the establishment's SIRET.
-        - An empty or very broad prefix may produce a large number of results.
-        - The `date` parameter allows you to retrieve the state of the legal unit at a specific point in time.
+    The search considers multiple legal-unit name and denomination fields,
+    including official names, usage names and usual denominations. This
+    allows the tool to find legal units when the user provides an
+    abbreviated, shortened or alternative form of the name.
 
-    Arguments:
-        name (str): The starting string of the legal unit names to search for.
-        date: Optional date used to retrieve the state of the legal unit
-            at a specific point in time. Use the date format expected by
-            the INSEE API (YYYY-MM-DD). If omitted, the current/latest
-            available information is returned.
+    For example, a search for "CCM PONT L'ABBE" may match a legal unit
+    whose official denomination is "CAISSE CREDIT MUTUEL PONT L'ABBE".
+
+    Use this tool when:
+    - the user wants to find one or more legal units by name;
+    - the user provides only part of a legal-unit name;
+    - the user provides an abbreviated or commonly used name;
+    - the exact legal-unit name is uncertain.
+
+    Do not use this tool when:
+    - the user provides a SIREN and wants information about that
+      specific legal unit;
+    - the user provides a SIRET;
+    - the user wants to search establishments by name;
+    - the user wants to search using a SIREN prefix.
+
+    Name matching is based on the beginning of the relevant name or
+    denomination field. Names are not unique identifiers, so multiple
+    legal units may be returned.
+
+    When multiple results are returned, use the available information
+    such as SIREN, name, denomination and location to help identify the
+    most relevant legal unit. Do not assume that a matching name
+    uniquely identifies a legal unit.
+
+    Args:
+        name_prefix:
+            Beginning of the legal-unit name or denomination to search
+            for. The value may be an abbreviated or commonly used name.
+
+        date:
+            Optional date used to retrieve information corresponding to
+            a specific point in time. Format: YYYY-MM-DD.
+
+    Returns:
+        Matching legal units from the INSEE enterprise data.
+
+    Raises:
+        ValueError:
+            If an input parameter has an invalid format.
+
+        ...:
+            If the INSEE API request fails.
     """
     instance = Requester(single_search=False, param='siren')
 
-    str_q1 = wild_card(BusinessColumnEnum.NOM_UNITE_LEGALE, name)
-    str_q2 = wild_card(BusinessColumnEnum.NOM_USAGE_UNITE_LEGALE, name)
-    str_q3 = wild_card(BusinessColumnEnum.DENOMINATION_UNITE_LEGALE, name)
-    str_q4 = wild_card(BusinessColumnEnum.DENOMINATION_USUELLE_UNITE_LEGALE, name)
-    str_q5 = wild_card(BusinessColumnEnum.DENOMINATION_USUELLE1_UNITE_LEGALE, name)
-    str_q6 = wild_card(BusinessColumnEnum.DENOMINATION_USUELLE2_UNITE_LEGALE, name)
-    str_q7 = wild_card(BusinessColumnEnum.DENOMINATION_USUELLE3_UNITE_LEGALE, name)
+    str_q1 = condition_period(wild_card(BusinessColumnEnum.NOM_UNITE_LEGALE))
+    str_q2 = condition_period(wild_card(BusinessColumnEnum.NOM_UNITE_LEGALE, name))
+    str_q3 = condition_period(wild_card(BusinessColumnEnum.NOM_USAGE_UNITE_LEGALE, name))
+    str_q4 = condition_period(wild_card(BusinessColumnEnum.DENOMINATION_UNITE_LEGALE, name))
+    str_q5 = condition_period(wild_card(BusinessColumnEnum.DENOMINATION_USUELLE_UNITE_LEGALE, name))
+    str_q6 = condition_period(wild_card(BusinessColumnEnum.DENOMINATION_USUELLE1_UNITE_LEGALE, name))
+    str_q7 = condition_period(wild_card(BusinessColumnEnum.DENOMINATION_USUELLE2_UNITE_LEGALE, name))
+    str_q8 = condition_period(wild_card(BusinessColumnEnum.DENOMINATION_USUELLE3_UNITE_LEGALE, name))
 
-    query = join_operator('OR', str_q1, str_q2, str_q3, str_q4, str_q5, str_q6, str_q7)
+    query = join_operator('OR', str_q2, str_q3, str_q4, str_q5, str_q6, str_q7, str_q8)
+    query = join_operator('AND', str_q1, query)
     query = MultiCriteriaSearchModel(q=query, date=date)
 
     await instance(query)
