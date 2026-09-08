@@ -153,6 +153,8 @@ def wild_card(key: BusinessColumnEnum, value: str | None = None, quote_value: bo
         str: The formatted wildcard query string.
     """
     result = key_value_pair(key.value, value, quote_value=quote_value)
+    if result is not None:
+        result = result.removesuffix('*')
     return f'{result}*'
 
 

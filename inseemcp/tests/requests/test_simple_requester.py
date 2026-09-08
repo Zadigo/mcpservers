@@ -7,6 +7,9 @@ from backend.simple_requester import (
     condition_or,
     condition_period,
     condition_to,
+    inversion,
+    key_value_pair,
+    wild_card,
 )
 from models.base import BusinessColumnEnum
 
@@ -43,3 +46,22 @@ def test_condition_or():
 
 def test_condition_and():
     assert condition_and(BusinessColumnEnum.DENOMINATION_UNITE_LEGALE, "value1", "value2") == "denominationUniteLegale:value1 AND denominationUniteLegale:value2"
+
+
+def test_key_value_pair():
+    assert key_value_pair(BusinessColumnEnum.DENOMINATION_UNITE_LEGALE, "value") == "denominationUniteLegale:value"
+
+
+@pytest.mark.parametrize(
+    'input,expected',
+    [
+        ("value*", "denominationUniteLegale:value*"),
+        ("value", "denominationUniteLegale:value*"),
+    ]
+)
+def test_wild_card(input, expected):
+    assert wild_card(BusinessColumnEnum.DENOMINATION_UNITE_LEGALE, input) == expected
+
+
+def test_inversion():
+    assert inversion("value") == "-value"
