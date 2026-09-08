@@ -177,7 +177,7 @@ async def search_legal_units_by_siren_prefix(
 
 
 @tool
-async def search_legal_units_by_name_prefix(name: str, exact_search: bool = False, date: str | None = None):
+async def search_legal_units_by_name_prefix(name_prefix: str, exact_search: bool = False, date: str | None = None):
     """
     Search the INSEE enterprise data for French legal units whose name
     starts with the specified prefix.
@@ -233,17 +233,30 @@ async def search_legal_units_by_name_prefix(name: str, exact_search: bool = Fals
     """
     instance = Requester(single_search=False, param='siren')
 
-    str_q1 = condition_period(wild_card(BusinessColumnEnum.NOM_UNITE_LEGALE))
-    str_q2 = condition_period(wild_card(BusinessColumnEnum.NOM_UNITE_LEGALE, name))
-    str_q3 = condition_period(wild_card(BusinessColumnEnum.NOM_USAGE_UNITE_LEGALE, name))
-    str_q4 = condition_period(wild_card(BusinessColumnEnum.DENOMINATION_UNITE_LEGALE, name))
-    str_q5 = condition_period(wild_card(BusinessColumnEnum.DENOMINATION_USUELLE_UNITE_LEGALE, name))
-    str_q6 = condition_period(wild_card(BusinessColumnEnum.DENOMINATION_USUELLE1_UNITE_LEGALE, name))
-    str_q7 = condition_period(wild_card(BusinessColumnEnum.DENOMINATION_USUELLE2_UNITE_LEGALE, name))
-    str_q8 = condition_period(wild_card(BusinessColumnEnum.DENOMINATION_USUELLE3_UNITE_LEGALE, name))
+    name_fields = [
+        BusinessColumnEnum.NOM_UNITE_LEGALE,
+        BusinessColumnEnum.NOM_USAGE_UNITE_LEGALE,
+        BusinessColumnEnum.DENOMINATION_UNITE_LEGALE,
+        # BusinessColumnEnum.DENOMINATION_USUELLE_UNITE_LEGALE,
+        # BusinessColumnEnum.DENOMINATION_USUELLE1_UNITE_LEGALE,
+        # BusinessColumnEnum.DENOMINATION_USUELLE2_UNITE_LEGALE,
+        # BusinessColumnEnum.DENOMINATION_USUELLE3_UNITE_LEGALE,
+    ]
 
-    query = join_operator('OR', str_q2, str_q3, str_q4, str_q5, str_q6, str_q7, str_q8)
-    query = join_operator('AND', str_q1, query)
+
+    name_conditions = [
+        condition_period(wild_card(field, name_prefix))
+            for field in name_fields
+    ]
+
+    name_query = join_operator("OR", *name_conditions)
+
+    query = join_operator(
+        "AND",
+        condition_period(wild_card(BusinessColumnEnum.NOM_UNITE_LEGALE)),
+        name_query,
+    )
+    
     query = MultiCriteriaSearchModel(q=query, date=date)
 
     await instance(query)

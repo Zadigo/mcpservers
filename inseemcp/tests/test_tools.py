@@ -5,8 +5,8 @@ from components.tools.establishments import (
     search_establishments_name_startswith,
 )
 from components.tools.legal_units import (
-    get_legal_unit_by_name_prefix,
     get_legal_units_by_name_and_location,
+    search_legal_units_by_name_prefix,
     search_legal_units_by_siren_prefix,
 )
 from components.tools.university import get_university_by_siren, get_university_by_siret
@@ -32,7 +32,7 @@ class TestGetSirenStartsWith:
 @pytest.mark.e2e
 class TestGetLegalUnitNameStartsWith:
     async def test_all_params(self):
-        result = await get_legal_unit_by_name_prefix(name="leclerc")
+        result = await search_legal_units_by_name_prefix(name_prefix="leclerc")
         assert result is not None
 
 
