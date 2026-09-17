@@ -347,4 +347,12 @@ class UniversityModel(pydantic.BaseModel):
                         continue
                     data[key] = ', '.join(maybe_list)
         return data
+
+
+class PandasUniversityModel(UniversityModel):
+    """Pandas model for a university, extending the base UniversityModel 
+    by returning a flat representation of the university coordinates."""
     
+    coordonnees: str | None = Field(
+        default=None
+    )

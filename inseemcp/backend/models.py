@@ -1,7 +1,9 @@
+from typing import Any
+
 import pydantic
 
 
-class ResponseError(pydantic.BaseModel):
+class ResponseErrorModel(pydantic.BaseModel):
     status_code: int
     content: str
-    json_content: dict[str, str] | None = None
+    json_content: dict[str, Any] | None = None

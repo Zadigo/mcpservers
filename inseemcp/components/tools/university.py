@@ -6,7 +6,7 @@ from fastmcp.tools import tool
 
 from backend.base import UniversityRequest
 from backend.utils import BaseRequest
-from models.university import UniversityModel
+from models.university import PandasUniversityModel, UniversityModel
 
 
 def filter_data(request: BaseRequest, name: str | None = None, siren: str | None = None, siret: str | None = None) -> list[dict[str, Any]]:
@@ -37,7 +37,7 @@ def filter_data(request: BaseRequest, name: str | None = None, siren: str | None
 
 
 @tool
-async def get_university_by_siren(siren: str) -> list[UniversityModel]:
+async def get_university_by_siren(siren: str) -> list[PandasUniversityModel]:
     """Returns a university by SIREN by querying the database called
     'Principaux établissements d'enseignement supérieur' provided by the
     French Ministry of Higher Education (Ministère de l'Enseignement supérieur, 
@@ -71,18 +71,18 @@ async def get_university_by_siren(siren: str) -> list[UniversityModel]:
         retrieve. The value should contain exactly 9 digits.
 
     Returns:
-        A list of UniversityModel instances matching the provided SIREN.
+        A list of PandasUniversityModel instances matching the provided SIREN.
     """
     instance = UniversityRequest()
     await instance()
     if instance._cached_response is None:
         return []
     data = filter_data(instance, siren=siren)
-    return [UniversityModel(**item) for item in data]
+    return [PandasUniversityModel(**item) for item in data]
 
 
 @tool
-async def get_university_by_siret(siret: str) -> list[UniversityModel]:
+async def get_university_by_siret(siret: str) -> list[PandasUniversityModel]:
     """Returns a university by SIRET by querying the database called
     'Principaux établissements d\'enseignement supérieur' provided by the
     French Ministry of Higher Education (Ministère de l'Enseignement supérieur, 
@@ -116,7 +116,7 @@ async def get_university_by_siret(siret: str) -> list[UniversityModel]:
         retrieve. The value should contain exactly 14 digits.
 
     Returns:
-        A list of UniversityModel instances matching the provided SIRET.
+        A list of PandasUniversityModel instances matching the provided SIRET.
     """
     instance = UniversityRequest()
     await instance()
@@ -127,4 +127,4 @@ async def get_university_by_siret(siret: str) -> list[UniversityModel]:
     data = filter_data(instance, siret=siret)
     data = [item for item in data if siret in item.get("siret", [])]
 
-    return [UniversityModel(**item) for item in data]
+    return [PandasUniversityModel(**item) for item in data]

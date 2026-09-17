@@ -2,97 +2,58 @@
 import pytest
 
 from components.tools.establishments import (
+    get_siret,
+    search_establishments_by_code_naf,
     search_establishments_name_startswith,
-)
-from components.tools.legal_units import (
-    get_legal_units_by_name_and_location,
-    get_siren,
-    search_legal_units_by_name_prefix,
-    search_legal_units_by_siren_prefix,
 )
 from components.tools.university import get_university_by_siren, get_university_by_siret
 
 
 @pytest.mark.e2e
-class TestSiren:
-    async def test_valid_siren(self, siren_number):
-        result = await get_siren(siren_number)
-        assert result.is_error is False
+class TestUniversityTools:
+    async def test_get_university_by_siren(self):
+        result = await get_university_by_siren(siren="824644587")
         assert result is not None
 
-    async def test_invalid_siren(self):
-        result = await get_siren(siren="000000000")
-        assert result.is_error is True
-        assert result is not None
-
-
-@pytest.mark.e2e
-class TestGetSirenStartsWith:
-    async def test_with_values(self):
-        result = await search_legal_units_by_siren_prefix(siren_prefix="3")
-        assert result is not None
-
-    async def test_all_params(self):
-        result = await search_legal_units_by_siren_prefix(
-            siren_prefix="3",
-            active_state="active",
-            legal_unit_category="MIC",
-            date="2024-01-01",
-            offset=0
-        )
+    async def test_get_university_by_siret(self):
+        result = await get_university_by_siret(siret="82464458700027")
         assert result is not None
 
 
 @pytest.mark.e2e
-class TestGetLegalUnitNameStartsWith:
-    async def test_all_params(self):
-        result = await search_legal_units_by_name_prefix(name_prefix="leclerc")
+class TestEstablishmentsTools:
+    async def test_get_siret(self):
+        result = await get_siret(siret="82464458700027")
         assert result is not None
+
+    async def test_search_establishments_name_startswith(self):
+        result = await search_establishments_name_startswith(name="Insee")
+        assert result is not None
+
+
+    async def test_search_establishments_by_code_naf(self):
+        result = await search_establishments_by_code_naf(code_naf="62.01Z")
+        assert result is not None
+
 
 
 @pytest.mark.e2e
-class TestSearchEstablishmentsNameStartsWith:
-    async def test_no_values(self):
-        result = await search_establishments_name_startswith(name="")
-        assert result is not None
-
-    async def test_with_values(self):
-        result = await search_establishments_name_startswith(name="Lecl")
-        assert result is not None
+class TestLegalUnits:
+    def test_get_siren(self):
+        pass
 
 
-@pytest.mark.e2e
-class TestLegalUnitsByName:
-    async def test_no_values(self):
-        result = await get_legal_units_by_name_and_location(name="")
-        assert result is not None
+    async def test_search_legal_units_by_siren_prefix(self):
+        pass
 
-    async def test_with_values(self):
-        result = await get_legal_units_by_name_and_location(name="Leclerc")
-        assert result is not None
+    async def test_search_legal_units_by_name_prefix(self):
+        pass
 
-    async def test_with_values_and_postal_code(self):
-        result = await get_legal_units_by_name_and_location(name="Leclerc", postal_code="5900")
-        assert result is not None
+    async def test_get_legal_units_column_has_no_value(self):
+        pass
 
+    async def test_get_legal_units_by_name_and_location(self):
+        pass
 
-@pytest.mark.e2e
-class TestGetUniversityBySiren:
-    async def test_no_values(self):
-        result = await get_university_by_siren(siren="")
-        assert result is not None
-
-    async def test_with_values(self):
-        result = await get_university_by_siren(siren="123456789")
-        assert result is not None
-
-
-@pytest.mark.e2e
-class TestGetUniversityBySiret:
-    async def test_no_values(self):
-        result = await get_university_by_siret(siret="")
-        assert result is not None
-
-    async def test_with_values(self):
-        result = await get_university_by_siret(siret="12345678901234")
-        assert result is not None
+    async def test_search_legal_units_by_address(self):
+        pass

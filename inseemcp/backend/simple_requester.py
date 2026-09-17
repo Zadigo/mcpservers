@@ -6,7 +6,7 @@ import httpx2
 import pydantic
 from pydantic import Field
 
-from backend.models import ResponseError
+from backend.models import ResponseErrorModel
 
 AUTHORIZATION_HEADER: str = 'X-INSEE-Api-Key-Integration'
 
@@ -55,7 +55,7 @@ class Requester:
         self.single_search = single_search
         self._final_url: str = ''
         self.param = param
-        self.error: ResponseError | None = None
+        self.error: ResponseErrorModel | None = None
         self._cached_response: httpx2.Response | None = None
 
     def __repr__(self) -> str:
@@ -112,14 +112,14 @@ class Requester:
             # Handle different HTTP response status codes
             match response.status_code:
                 case 500:
-                    self.error = ResponseError(
+                    self.error = ResponseErrorModel(
                         status_code=500,
                         content=f"Internal server error: {response.content}",
                     )
                     return None
 
                 case 404:
-                    self.error = ResponseError(
+                    self.error = ResponseErrorModel(
                         status_code=404,
                         content="The requested resource was not found",
                         json_content=response.json()
@@ -127,19 +127,12 @@ class Requester:
                     return None
 
                 case 200:
-                    self.error = ResponseError(
-                        status_code=200,
-                        content=response.text,
-                        json_content=response.json()
-                    )
+                    self._cached_response = response
+                    return self._cached_response.json()
 
                 case _:
-                    self.error = ResponseError(
+                    self.error = ResponseErrorModel(
                         status_code=response.status_code,
                         content=f"Unexpected status code: {response.content}",
                     )
                     return None
-
-            self._cached_response = response
-            return self._cached_response.json()
-        return None

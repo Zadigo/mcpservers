@@ -7,7 +7,7 @@ from typing import Any
 import httpx2
 import pandas
 
-from backend.models import ResponseError
+from backend.models import ResponseErrorModel
 from utils import DATA_DIR
 
 type TypeDataReturn[T = dict[str, Any]] = T | Sequence[T] | None
@@ -15,7 +15,7 @@ type TypeDataReturn[T = dict[str, Any]] = T | Sequence[T] | None
 class BaseRequest(ABC):
     base_url: str | None = None
     cache_key: str = 'inseemcp:{value}'
-    error: ResponseError | None = None
+    error: ResponseErrorModel | None = None
     _cached_response: httpx2.Response | None = None
 
     def __init__(self) -> None:
@@ -56,7 +56,7 @@ class BaseRequest(ABC):
         async with httpx2.AsyncClient() as client:
             response = await client.get(self.url, headers=self.headers, timeout=30)
             if response.status_code == 404:
-                self.error = ResponseError(
+                self.error = ResponseErrorModel(
                     status_code=response.status_code,
                     content="The requested resource was not found",
                     json_content=response.json()
@@ -64,7 +64,7 @@ class BaseRequest(ABC):
                 return
 
             if response.status_code != 200:
-                self.error = ResponseError(
+                self.error = ResponseErrorModel(
                     status_code=response.status_code,
                     content=response.text,
                     json_content=response.json()
