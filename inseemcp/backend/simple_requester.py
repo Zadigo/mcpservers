@@ -110,20 +110,36 @@ class Requester:
 
         async with httpx2.AsyncClient() as client:
             response = await client.get(self._final_url, headers=headers, timeout=30)
-            if response.status_code == 404:
-                self.error = ResponseError(
-                    status_code=response.status_code,
-                    content="The requested resource was not found",
-                    json_content=response.json()
-                )
-                return None
+            # Handle different HTTP response status codes
+            match response.status_code:
+                case 500:
+                    self.error = ResponseError(
+                        status_code=500,
+                        content=f"Internal server error: {response.content}",
+                    )
+                    return None
 
-            if response.status_code != 200:
-                self.error = ResponseError(
-                    status_code=response.status_code,
-                    content=response.text,
-                    json_content=response.json()
-                )
+                case 404:
+                    self.error = ResponseError(
+                        status_code=404,
+                        content="The requested resource was not found",
+                        json_content=response.json()
+                    )
+                    return None
+
+                case 200:
+                    self.error = ResponseError(
+                        status_code=200,
+                        content=response.text,
+                        json_content=response.json()
+                    )
+
+                case _:
+                    self.error = ResponseError(
+                        status_code=response.status_code,
+                        content=f"Unexpected status code: {response.content}",
+                    )
+                    return None
 
             self._cached_response = response
             return self._cached_response.json()

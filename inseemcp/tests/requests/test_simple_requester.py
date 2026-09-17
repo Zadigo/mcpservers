@@ -2,6 +2,7 @@ import pytest
 
 from backend.simple_requester import (
     MultiCriteriaSearchModel,
+    Requester,
     SearchModel,
     condition_and,
     condition_or,
@@ -12,6 +13,25 @@ from backend.simple_requester import (
     wild_card,
 )
 from models.base import BusinessColumnEnum
+
+
+class TestRequester:
+    def test_instance_creation(self):
+        instance = Requester()
+        assert instance is not None
+        assert instance.param == 'siret'
+
+    @pytest.mark.e2e
+    async def test_search_siren(self, siren_number):
+        instance = Requester(param='siren')
+        assert instance is not None
+        assert instance.param == 'siren'
+
+        response = await instance(SearchModel(), url_param=siren_number)
+        assert response is not None, f"Response should not be None: {instance.error}"
+        assert 'headers' in response
+        assert 'unitesLegales' in response
+        assert response['headers']['statut'] == 200
 
 
 @pytest.mark.e2e

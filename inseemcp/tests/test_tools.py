@@ -6,10 +6,23 @@ from components.tools.establishments import (
 )
 from components.tools.legal_units import (
     get_legal_units_by_name_and_location,
+    get_siren,
     search_legal_units_by_name_prefix,
     search_legal_units_by_siren_prefix,
 )
 from components.tools.university import get_university_by_siren, get_university_by_siret
+
+
+class TestSiren:
+    async def test_valid_siren(self, siren_number):
+        result = await get_siren(siren_number)
+        assert result.is_error is False
+        assert result is not None
+
+    async def test_invalid_siren(self):
+        result = await get_siren(siren="000000000")
+        assert result.is_error is True
+        assert result is not None
 
 
 @pytest.mark.e2e

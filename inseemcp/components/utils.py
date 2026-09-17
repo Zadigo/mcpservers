@@ -16,8 +16,7 @@ def select_response(instance: Requester):
     
     if instance.error is not None:
         return ToolResult(
-            # content=instance.error.content, 
-            structured_content=instance.error.json_content,
+            structured_content=instance.error.json_content or instance.error.content,
             meta=meta,
             is_error=True
         )

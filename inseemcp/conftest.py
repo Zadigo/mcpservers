@@ -9,6 +9,11 @@ from utils import BASE_DIR
 
 
 @pytest.fixture
+def siren_number():
+    return "817759186" # HEC
+
+
+@pytest.fixture
 def api_request():
     return Requester()
 

@@ -2,8 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastmcp import FastMCP
 from fastmcp.resources import DirectoryResource
-
-# from fastmcp.server.auth.providers.github import GitHubProvider
+from fastmcp.server.auth import JWTVerifier, MultiAuth, OAuthProxy
 from fastmcp.server.middleware.caching import ResponseCachingMiddleware
 from fastmcp.server.providers import FileSystemProvider, SkillsDirectoryProvider
 from key_value.aio.stores.redis import RedisStore
@@ -17,17 +16,31 @@ from pydantic import AnyUrl
 
 from components.resources.constants import build_resources
 from models.base import BusinessColumnEnum
-
-# from ui.university import ui_app
 from utils import BASE_DIR, logger
 
-# auth = GitHubProvider(
-#     client_id=os.environ["GITHUB_CLIENT_ID"],
-#     client_secret=os.environ["GITHUB_CLIENT_SECRET"],
-#     base_url="https://your-server.com",
-#     jwt_signing_key=os.environ["JWT_SIGNING_KEY"],
-#     client_storage=RedisStore(host="redis.example.com", port=6379)
-# )
+upstream_verifier = JWTVerifier(
+    jwks_uri="https://login.example.com/.well-known/jwks.json",
+    issuer="https://login.example.com",
+    audience="my-app",
+)
+
+auth = MultiAuth(
+    server=OAuthProxy(
+        upstream_authorization_endpoint="https://login.example.com/oauth/authorize",
+        upstream_token_endpoint="https://login.example.com/oauth/token",
+        upstream_client_id="my-app",
+        upstream_client_secret="secret",
+        token_verifier=upstream_verifier,
+        base_url="https://my-server.com",
+    ),
+    verifiers=[
+        JWTVerifier(
+            jwks_uri="https://internal-issuer.example.com/.well-known/jwks.json",
+            issuer="https://internal-issuer.example.com",
+            audience="my-mcp-server",
+        ),
+    ]
+)
 
 middleware = ResponseCachingMiddleware(
     cache_storage=RedisStore(host="localhost", port=6379)
@@ -58,11 +71,10 @@ mcp = FastMCP(
     strict_input_validation=False,
     providers=[
         # ui_app,
-        FileSystemProvider(BASE_DIR.joinpath('components'), reload=True)
+        FileSystemProvider(BASE_DIR.joinpath('components'), reload=True),
+        SkillsDirectoryProvider(roots=BASE_DIR.joinpath(".claude", "skills"))
     ]
 )
-
-mcp.add_provider(SkillsDirectoryProvider(roots=BASE_DIR.joinpath(".claude", "skills")))
 
 
 # File catalog
@@ -81,7 +93,6 @@ if static_dir.is_dir():
 
 
 # Build and add all predefined resources to the MCP application.
-
 build_resources(mcp)
 
 
