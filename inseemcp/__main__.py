@@ -1,12 +1,14 @@
 from argparse import ArgumentParser
 
+# from backend.simple_requester import LawyersRequest
+
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument(
         'dataset',
         type=str,
         required=True,
-        choice=['lawyers']
+        choices=['lawyers']
     )
 
     namespace = parser.parse_args()
