@@ -86,8 +86,8 @@ class UniversityModel(pydantic.BaseModel):
     compte_youtube: str | None = Field(
         default=None
     )
-    coordonnees: str | None = Field(
-        default=None
+    coordonnees: UniversityCoordinatesModel = Field(
+        ...
     )
     date_creation: str | None = Field(
         default=None
@@ -330,7 +330,21 @@ class UniversityModel(pydantic.BaseModel):
     @model_validator(mode='before')
     @classmethod
     def check_columns(cls, data: Any) -> Any:
+        list_values = [
+            'identifiant_idref', 
+            'identifiant_ror', 
+            'identifiant_wikidata', 
+            'siren', 
+            'siret', 
+            'rna',
+            'anciens_codes_uai',
+            'type_d_etablissement'
+        ]
         if isinstance(data, dict):
-            pass
+            for key, maybe_list in data.items():
+                if key in list_values:
+                    if not isinstance(maybe_list, list):
+                        continue
+                    data[key] = ', '.join(maybe_list)
         return data
     
