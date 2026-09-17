@@ -3,6 +3,7 @@ import pytest
 from backend import (
     condition_and,
     condition_or,
+    condition_or_dict,
     condition_period,
     condition_to,
     inversion,
@@ -48,4 +49,6 @@ def test_inversion():
 
 
 def test_condition_or_dict():
-    pass
+    result = condition_or_dict({ BusinessColumnEnum.DENOMINATION_UNITE_LEGALE: 'some value' })
+    assert isinstance(result, str)
+    assert result == "denominationUniteLegale:some value"

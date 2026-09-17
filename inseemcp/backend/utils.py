@@ -61,7 +61,7 @@ class BaseRequest(ABC):
                     content="The requested resource was not found",
                     json_content=response.json()
                 )
-                return None
+                return
 
             if response.status_code != 200:
                 self.error = ResponseError(
@@ -69,6 +69,7 @@ class BaseRequest(ABC):
                     content=response.text,
                     json_content=response.json()
                 )
+                return
 
             self._cached_response = response
             return self.clean(self._cached_response.json())

@@ -52,3 +52,22 @@ max_line_length = 120
 in-place = true
 recursive = true
 aggressive = 3
+
+[tool.coverage.run]
+omit = [
+    "conftest.py",
+    "*/tests/*",
+    "manage.py",
+    "*/migrations/*",
+    "*/__init__.py",
+    "*/typings.py"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]
