@@ -2,15 +2,17 @@ from typing import Literal
 
 from fastmcp.tools import tool
 
-from backend.simple_requester import (
-    MultiCriteriaSearchModel,
-    Requester,
-    SearchModel,
+from backend import (
     condition_period,
     inversion,
     join_operator,
     key_value_pair,
     wild_card,
+)
+from backend.simple_requester import (
+    MultiCriteriaSearchModel,
+    Requester,
+    SearchModel,
 )
 from components.utils import select_response
 from models.base import BusinessColumnEnum
@@ -274,7 +276,6 @@ async def get_legal_units_column_has_no_value(column_name: str):
     str_query = inversion(wild_card(BusinessColumnEnum.__getitem__(column_name)))
     await instance(MultiCriteriaSearchModel(q=str_query))
     return select_response(instance)
-
 
 
 async def legal_units_exact_search(column_name: str, value: str, count: int = 20, offset: int = 0):

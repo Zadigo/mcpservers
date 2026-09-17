@@ -13,6 +13,7 @@ from components.tools.legal_units import (
 from components.tools.university import get_university_by_siren, get_university_by_siret
 
 
+@pytest.mark.e2e
 class TestSiren:
     async def test_valid_siren(self, siren_number):
         result = await get_siren(siren_number)

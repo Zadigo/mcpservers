@@ -162,7 +162,6 @@ class Address2Model(pydantic.BaseModel):
     )
 
 
-
 class LegalUnitModel(pydantic.BaseModel):
     etatAdministratifUniteLegale: str = Field(
         description="Administrative status of the legal unit"
@@ -338,6 +337,7 @@ class LegalUnitPeriodModel(pydantic.BaseModel):
         description="Indicates whether the employer status of the establishment has changed",
     )
 
+
 class EstablishmentModel(pydantic.BaseModel):
     siren: str = Field(
         description="SIREN of the legal unit to which the establishment belongs"
@@ -392,6 +392,7 @@ class EstablishmentModel(pydantic.BaseModel):
 
 
 class HeaderModel(pydantic.BaseModel):
+    """Represents the header of the response."""
     statut: int = Field(
         description="Statut of the response"
     )
