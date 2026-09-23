@@ -6,7 +6,7 @@ from fastmcp.tools import tool
 
 from backend.base import UniversityRequest
 from backend.utils import BaseRequest
-from models.university import PandasUniversityModel, UniversityModel
+from models.university import PandasUniversityModel
 
 
 def filter_data(request: BaseRequest, name: str | None = None, siren: str | None = None, siret: str | None = None) -> list[dict[str, Any]]:
