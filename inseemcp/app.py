@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastmcp import FastMCP
+from fastmcp.apps.file_upload import FileUpload
 from fastmcp.resources import DirectoryResource
 from fastmcp.server.auth import JWTVerifier, MultiAuth, OAuthProxy
 from fastmcp.server.middleware.caching import ResponseCachingMiddleware
@@ -72,7 +73,8 @@ mcp = FastMCP(
     providers=[
         # ui_app,
         FileSystemProvider(BASE_DIR.joinpath('components'), reload=True),
-        SkillsDirectoryProvider(roots=BASE_DIR.joinpath(".claude", "skills"))
+        SkillsDirectoryProvider(roots=BASE_DIR.joinpath(".claude", "skills")),
+        FileUpload(title='Enrich Dataset', description='Upload files to enrich the dataset with INSEE data.')
     ]
 )
 

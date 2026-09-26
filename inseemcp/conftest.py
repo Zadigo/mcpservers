@@ -46,10 +46,17 @@ def mocked_request():
         return mock
 
 
-
 @pytest.fixture
 async def mocked_lawyers():
     async with aiofiles.open(BASE_DIR / 'tests' / 'example_lawyers.json', mode='r') as f:
+        str_json = await f.read()
+        content = json.loads(str_json)
+    return content
+
+
+@pytest.fixture
+async def json_bodacc():
+    async with aiofiles.open(BASE_DIR / 'tests' / 'example_bodacc.json', mode='r') as f:
         str_json = await f.read()
         content = json.loads(str_json)
     return content

@@ -2,6 +2,7 @@ import json
 
 import aiofiles
 
+from models.bodacc import BodaccModel
 from models.lawyers import LawyersModel
 from models.university import UniversityModel
 from utils import BASE_DIR
@@ -23,3 +24,10 @@ async def test_lawyers_model(mocked_lawyers):
 
     assert data is not None
     assert isinstance(data, LawyersModel)
+
+
+async def test_bodacc_model(json_bodacc):
+    data = BodaccModel(**json_bodacc['results'][0])
+
+    assert data is not None
+    assert isinstance(data, BodaccModel)

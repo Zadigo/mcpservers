@@ -6,17 +6,19 @@ from typing import Any
 
 import httpx2
 import pandas
+from pydantic import BaseModel
 
 from backend.models import ResponseErrorModel
 from utils import DATA_DIR
 
 type TypeDataReturn[T = dict[str, Any]] = T | Sequence[T] | None
 
-class BaseRequest(ABC):
+class BaseRequest[T = BaseModel](ABC):
     base_url: str | None = None
     cache_key: str = 'inseemcp:{value}'
     error: ResponseErrorModel | None = None
     _cached_response: httpx2.Response | None = None
+    model: type[T] | None = None
 
     def __init__(self) -> None:
         self.headers: dict[str, str] = {
@@ -47,14 +49,15 @@ class BaseRequest(ABC):
         """
         return data
 
-    async def __call__(self, headers: dict[str, str] | None = None) -> TypeDataReturn:
+    async def __call__(self, headers: dict[str, str] | None = None, query: BaseModel | None = None) -> TypeDataReturn:
         self.headers = headers or {} | self.headers
 
         if self.url == '':
             raise ValueError('The url does not have a valid format')
 
         async with httpx2.AsyncClient() as client:
-            response = await client.get(self.url, headers=self.headers, timeout=30)
+            params = query.model_dump(exclude_none=True) if query is not None else None
+            response = await client.get(self.url, headers=self.headers, params=params, timeout=30)
             if response.status_code == 404:
                 self.error = ResponseErrorModel(
                     status_code=response.status_code,
@@ -73,6 +76,26 @@ class BaseRequest(ABC):
 
             self._cached_response = response
             return self.clean(self._cached_response.json())
+
+    def get_model(self, data: dict[str, Any] | Sequence[dict[str, Any]] | None) -> T | Sequence[T] | None:
+        """Convert the raw data into the specified model(s).
+
+        Args:
+            data (dict[str, Any] | Sequence[dict[str, Any]] | None): The raw data to be converted.
+
+        Returns:
+            T | Sequence[T] | None: The converted model instance(s) or None if no model is specified.
+        """
+        if data is None:
+            return None
+        
+        if self.model is not None:
+            if isinstance(data, list):
+                return [self.model(**item) for item in data]
+            
+            if isinstance(data, dict):
+                return self.model(**data)
+        return None
 
 
 class FileDownloadMixin[T = Sequence[dict[str, Any]]]:

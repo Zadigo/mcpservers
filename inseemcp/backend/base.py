@@ -1,9 +1,12 @@
 
+from typing import Any
+
 from backend.utils import BaseRequest
+from models.bodacc import BodaccModel
 from models.university import UniversityModel
 
 
-class UniversityRequest(BaseRequest):
+class UniversityRequest(BaseRequest[UniversityModel]):
     """A request that adds additional context to a main search for a
     SIREN or SIRET with the INSEE database."""
     
@@ -46,3 +49,17 @@ class UniversityRequest(BaseRequest):
                     if key == 'coordonnees' and isinstance(value, dict):
                             item[key] = ','.join([str(v) for v in value.values()])
         return data
+
+
+
+class BodaccRequest(BaseRequest[BodaccModel]):
+    """A request that adds additional context to a main search for a
+    Bodacc entry with the INSEE database."""
+
+    base_url = 'https://bodacc-datadila.opendatasoft.com/api/explore/v2.1/catalog/datasets/annonces-commerciales/records'
+    model: type[BodaccModel] = BodaccModel
+
+    def clean(self, data) -> list[dict[str, Any]]:
+        if data is not None and isinstance(data, dict):
+            return data['results']
+        return []
