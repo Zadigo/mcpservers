@@ -60,3 +60,11 @@ async def json_bodacc():
         str_json = await f.read()
         content = json.loads(str_json)
     return content
+
+
+@pytest.fixture
+async def json_universities():
+    async with aiofiles.open(BASE_DIR / 'tests' / 'example_universities.json', mode='r') as f:
+        str_json = await f.read()
+        content = json.loads(str_json)
+    return content

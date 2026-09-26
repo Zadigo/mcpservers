@@ -47,9 +47,8 @@ class UniversityRequest(BaseRequest[UniversityModel]):
                                 continue
 
                     if key == 'coordonnees' and isinstance(value, dict):
-                            item[key] = ','.join([str(v) for v in value.values()])
+                        item[key] = ','.join([str(v) for v in value.values()])
         return data
-
 
 
 class BodaccRequest(BaseRequest[BodaccModel]):
